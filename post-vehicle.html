@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Post Free Vehicle | Tripeaz Taxi Partners</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <link rel="stylesheet" href="post-booking.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-content">
+        <!-- Logo -->
+        <div class="header-logo">
+          <h2 class="logo-text">Tripeaz Taxi</h2>
+          <span class="logo-badge">Partners</span>
+        </div>
+
+        <!-- Support Button -->
+        <button class="support-button" onclick="handleSupportClick()">
+          <span class="support-icon">🛠️</span>
+        </button>
+      </div>
+      <div class="header-border"></div>
+    </header>
+
+    <!-- Form Container -->
+    <main class="form-container">
+      <form
+        class="booking-form"
+        id="vehicleForm"
+        onsubmit="handleVehicleSubmit(event)"
+      >
+        <!-- Availability Toggle -->
+        <div class="form-section">
+          <div class="trip-type-toggle">
+            <button
+              type="button"
+              class="trip-option active"
+              id="availableNowBtn"
+              onclick="toggleTripType('available-now')"
+            >
+              Available Now
+            </button>
+            <button
+              type="button"
+              class="trip-option"
+              id="availableLaterBtn"
+              onclick="toggleTripType('available-later')"
+            >
+              Available Later
+            </button>
+          </div>
+        </div>
+
+        <!-- Vehicle Type Selection -->
+        <div class="form-section">
+          <label class="section-label">Select Vehicle Type</label>
+          <div class="vehicle-types">
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('sedan')"
+              data-vehicle="sedan"
+            >
+              <span class="vehicle-icon">🚙</span>
+              <span>Sedan</span>
+            </button>
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('hatchback')"
+              data-vehicle="hatchback"
+            >
+              <span class="vehicle-icon">🚐</span>
+              <span>Hatchback</span>
+            </button>
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('suv')"
+              data-vehicle="suv"
+            >
+              <span class="vehicle-icon">🚗</span>
+              <span>SUV</span>
+            </button>
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('traveller')"
+              data-vehicle="traveller"
+            >
+              <span class="vehicle-icon">🚌</span>
+              <span>Traveller</span>
+            </button>
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('bus')"
+              data-vehicle="bus"
+            >
+              <span class="vehicle-icon">🚍</span>
+              <span>Bus</span>
+            </button>
+            <button
+              type="button"
+              class="vehicle-option"
+              onclick="selectVehicle('luxury')"
+              data-vehicle="luxury"
+            >
+              <span class="vehicle-icon">✨</span>
+              <span>Luxury</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="form-section">
+          <label class="section-label">Select Date & Time</label>
+          <div class="date-time-row">
+            <!-- Date Picker -->
+            <div class="input-group">
+              <div class="date-picker-wrapper">
+                <input
+                  type="text"
+                  id="availabilityDate"
+                  class="form-input date-picker-input"
+                  placeholder="dd-mm-yyyy"
+                  readonly
+                  required
+                />
+                <span class="input-icon">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffb300"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </span>
+              </div>
+              <div class="custom-date-picker" id="availabilityDatePicker">
+                <div class="date-picker-header">
+                  <button
+                    type="button"
+                    class="date-nav-btn"
+                    id="availabilityPrevMonth"
+                  >
+                    ‹
+                  </button>
+                  <div class="date-picker-month-year">
+                    <div
+                      class="custom-dropdown date-dropdown-small"
+                      id="availabilityMonthDropdown"
+                    >
+                      <div
+                        class="dropdown-selected date-dropdown-selected"
+                        id="availabilityMonthSelected"
+                      >
+                        <span
+                          class="selected-text"
+                          id="availabilityMonthSelectedText"
+                          >January</span
+                        >
+                        <span class="dropdown-arrow">▼</span>
+                      </div>
+                      <div
+                        class="dropdown-options date-dropdown-options"
+                        id="availabilityMonthOptions"
+                      ></div>
+                    </div>
+                    <div
+                      class="custom-dropdown date-dropdown-small"
+                      id="availabilityYearDropdown"
+                    >
+                      <div
+                        class="dropdown-selected date-dropdown-selected"
+                        id="availabilityYearSelected"
+                      >
+                        <span
+                          class="selected-text"
+                          id="availabilityYearSelectedText"
+                          >2024</span
+                        >
+                        <span class="dropdown-arrow">▼</span>
+                      </div>
+                      <div
+                        class="dropdown-options date-dropdown-options"
+                        id="availabilityYearOptions"
+                      ></div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="date-nav-btn"
+                    id="availabilityNextMonth"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div class="date-picker-weekdays">
+                  <div class="weekday">Su</div>
+                  <div class="weekday">Mo</div>
+                  <div class="weekday">Tu</div>
+                  <div class="weekday">We</div>
+                  <div class="weekday">Th</div>
+                  <div class="weekday">Fr</div>
+                  <div class="weekday">Sa</div>
+                </div>
+                <div
+                  class="date-picker-days"
+                  id="availabilityDatePickerDays"
+                ></div>
+                <div class="date-picker-footer">
+                  <button
+                    type="button"
+                    class="date-picker-btn clear-btn"
+                    id="availabilityClearDate"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    class="date-picker-btn confirm-btn"
+                    id="availabilityConfirmDate"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+              <input
+                type="hidden"
+                id="availabilityDateHidden"
+                name="availabilityDate"
+                required
+              />
+            </div>
+
+            <!-- Time Picker -->
+            <div class="input-group">
+              <div class="time-picker-wrapper">
+                <span class="input-icon">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffb300"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="availabilityTime"
+                  class="form-input time-picker-input"
+                  placeholder="Select time"
+                  readonly
+                  required
+                />
+                <div
+                  class="custom-time-picker"
+                  id="availabilityTimePicker"
+                  style="
+                    position: fixed !important;
+                    top: 394px !important;
+                    left: 161px !important;
+                    width: 240px !important;
+                    right: auto;
+                    z-index: 100000;
+                    max-height: none;
+                    overflow: hidden;
+                  "
+                >
+                  <div class="time-picker-header">
+                    <!-- Hour Column -->
+                    <div class="time-wheel-column">
+                      <div class="time-wheel-label">Hour</div>
+                      <div class="time-wheel-container" id="vehicleHourWheel">
+                        <div class="time-wheel-item" data-value="01">01</div>
+                        <div class="time-wheel-item" data-value="02">02</div>
+                        <div class="time-wheel-item" data-value="03">03</div>
+                        <div class="time-wheel-item" data-value="04">04</div>
+                        <div class="time-wheel-item" data-value="05">05</div>
+                        <div class="time-wheel-item" data-value="06">06</div>
+                        <div class="time-wheel-item" data-value="07">07</div>
+                        <div class="time-wheel-item" data-value="08">08</div>
+                        <div class="time-wheel-item" data-value="09">09</div>
+                        <div class="time-wheel-item" data-value="10">10</div>
+                        <div class="time-wheel-item" data-value="11">11</div>
+                        <div class="time-wheel-item active" data-value="12">
+                          12
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Separator -->
+                    <div class="time-separator">:</div>
+
+                    <!-- Minute Column -->
+                    <div class="time-wheel-column">
+                      <div class="time-wheel-label">Minute</div>
+                      <div class="time-wheel-container" id="vehicleMinuteWheel">
+                        <!-- Will be populated by JS (00-55 in 5-min intervals) -->
+                      </div>
+                    </div>
+
+                    <!-- AM/PM Column -->
+                    <div class="time-wheel-column">
+                      <div class="time-wheel-label">Period</div>
+                      <div class="time-wheel-container" id="vehicleAMPMWheel">
+                        <div class="time-wheel-item" data-value="AM">AM</div>
+                        <div class="time-wheel-item active" data-value="PM">
+                          PM
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="time-picker-footer">
+                    <button
+                      type="button"
+                      class="time-picker-btn clear-btn"
+                      id="availabilityClearTime"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      class="time-picker-btn confirm-btn"
+                      id="availabilityConfirmTime"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="hidden"
+                  id="availabilityTimeHidden"
+                  name="availabilityTime"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pickup & Drop Locations -->
+        <div class="form-section">
+          <label class="section-label">Pickup & Drop Locations</label>
+          <div class="location-row">
+            <div class="input-group">
+              <span class="input-icon">📍</span>
+              <select id="pickupCity" class="form-input" required>
+                <option value="">Pickup City</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <span class="input-icon">📍</span>
+              <select id="dropCity" class="form-input" required>
+                <option value="">Drop City</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note -->
+        <div class="form-section">
+          <label class="section-label">Note</label>
+          <div class="input-group">
+            <textarea
+              id="customRequirement"
+              class="form-textarea"
+              placeholder="Add special instructions (optional)..."
+              oninput="updateCharCount()"
+            ></textarea>
+            <div class="char-count" id="charCount">0/250 words</div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-section">
+          <div class="amount-submit-row">
+            <div style="flex: 1"></div>
+            <button type="submit" class="submit-button">
+              Post Availability
+            </button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal">
+      <div class="modal-content">
+        <div class="success-icon">✅</div>
+        <h2>Vehicle Posted Successfully!</h2>
+        <p>
+          Your vehicle availability has been shared with Tripeaz Taxi Partners
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <footer class="footer-nav">
+      <nav class="nav-tabs">
+        <!-- Tab 1: Booking Available -->
+        <button
+          class="nav-tab"
+          data-tab="available"
+          onclick="navigateToTab('available')"
+        >
+          <div class="tab-icon">🚖</div>
+          <span class="tab-label">Available</span>
+        </button>
+
+        <!-- Tab 2: My Features -->
+        <button
+          class="nav-tab"
+          data-tab="features"
+          onclick="navigateToTab('features')"
+        >
+          <div class="tab-icon">⭐</div>
+          <span class="tab-label">Features</span>
+        </button>
+
+        <!-- Tab 3: Floating Action Button (FAB) -->
+        <button
+          class="nav-tab fab-button"
+          onclick="toggleFABPopup()"
+          id="fabButton"
+          aria-label="Add New Item"
+          aria-expanded="false"
+        >
+          <div class="fab-icon nav-fab-icon">+</div>
+        </button>
+
+        <!-- Tab 4: My Bookings -->
+        <button
+          class="nav-tab"
+          data-tab="bookings"
+          onclick="navigateToTab('bookings')"
+        >
+          <div class="tab-icon">📋</div>
+          <span class="tab-label">Bookings</span>
+        </button>
+
+        <!-- Tab 5: Profile -->
+        <button
+          class="nav-tab"
+          data-tab="profile"
+          onclick="navigateToTab('profile')"
+        >
+          <div class="tab-icon">👤</div>
+          <span class="tab-label">Profile</span>
+        </button>
+      </nav>
+    </footer>
+
+    <!-- Chat Bot Floater -->
+    <div class="chatbot-floater" onclick="toggleChatbot()">
+      <span class="chatbot-icon">💬</span>
+    </div>
+
+    <!-- FAB Popup Menu -->
+    <div
+      class="fab-popup-overlay"
+      id="fabPopupOverlay"
+      onclick="closeFABPopup()"
+    >
+      <div class="fab-popup-menu" onclick="event.stopPropagation()">
+        <div class="fab-popup-option" onclick="handleUploadBooking()">
+          <span class="fab-option-icon">📄</span>
+          <span class="fab-option-label">Upload New Booking</span>
+        </div>
+        <div class="fab-popup-option" onclick="handleUploadVehicle()">
+          <span class="fab-option-icon">🚗</span>
+          <span class="fab-option-label">Upload Free Vehicle</span>
+        </div>
+        <div class="fab-popup-option cancel" onclick="closeFABPopup()">
+          <span class="fab-option-icon">✕</span>
+          <span class="fab-option-label">Cancel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Bot Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+      <div class="chatbot-header">
+        <h3>Customer Support</h3>
+        <button
+          class="close-chatbot-btn"
+          onclick="toggleChatbot()"
+          aria-label="Close chat"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="chatbot-messages" id="chatbotMessages">
+        <div class="chat-message bot-message">
+          <p>
+            Hello! 👋 Welcome to Tripeaz Taxi Partners. How can I help you with
+            your booking?
+          </p>
+        </div>
+      </div>
+      <div class="chatbot-input-container">
+        <input
+          type="text"
+          class="chatbot-input"
+          id="chatbotInput"
+          placeholder="Type your message..."
+          onkeypress="handleChatInput(event)"
+        />
+        <button class="chatbot-send-btn" onclick="sendChatMessage()">
+          <span class="send-icon">📤</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div class="alert-modal-overlay" id="alertModalOverlay">
+      <div class="alert-modal" id="alertModal">
+        <div class="alert-modal-content">
+          <div class="alert-modal-icon" id="alertModalIcon">⚠️</div>
+          <div class="alert-modal-message" id="alertModalMessage">
+            Please select a date
+          </div>
+          <button
+            class="alert-modal-btn"
+            id="alertModalBtn"
+            onclick="hideAlertModal()"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="post-vehicle.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>

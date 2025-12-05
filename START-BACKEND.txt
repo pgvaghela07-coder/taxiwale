@@ -1,0 +1,41 @@
+========================================
+BACKEND SERVER START - EXACT COMMANDS
+========================================
+
+OPEN CMD (Command Prompt) - NOT PowerShell
+-------------------------------------------
+
+Then copy and paste these commands ONE BY ONE:
+
+1. Navigate to backend folder:
+   cd "C:\OneDrive\Desktop\New Taxi Wala Partners\backend"
+
+2. Start the server:
+   node src/server.js
+
+OR use npm:
+   npm start
+
+
+WHAT YOU SHOULD SEE:
+-------------------------------------------
+🚀 Server running on port 5000
+📡 Environment: development
+🌐 Frontend URL: http://localhost:3000
+
+
+TO VERIFY SERVER IS RUNNING:
+-------------------------------------------
+Open browser: http://localhost:5000
+Or: http://localhost:5000/health
+
+
+TO STOP SERVER:
+-------------------------------------------
+Press Ctrl+C in the CMD window
+
+
+EASIEST WAY:
+-------------------------------------------
+Double-click: backend\START-BACKEND-SERVER.bat
+

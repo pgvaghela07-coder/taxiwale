@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripeaz Taxi Partners | Verification</title>
+    <link rel="stylesheet" href="../css/pages/verification.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Header Strip -->
+    <div class="header-strip">
+      <div class="strip-gradient"></div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="verification-container">
+      <!-- Header Section -->
+      <header class="verification-header">
+        <div class="logo-small">
+          <h2>Tripeaz Taxi</h2>
+          <p>Partners</p>
+        </div>
+        <h1 class="page-title">Verify Your Identity</h1>
+        <p class="page-subtitle">
+          Complete verification to unlock full access and trust features.
+        </p>
+      </header>
+
+      <!-- Verification Options Grid -->
+      <div class="verification-grid">
+        <!-- Aadhaar Verification Card -->
+        <div class="verification-card" data-card="1" id="aadhaarCard">
+          <div class="status-badge pending-badge" id="aadhaarBadge">
+            <span class="badge-icon">🟠</span>
+            <span class="badge-text">Pending</span>
+          </div>
+          <div class="card-icon" data-icon="🪪">🪪</div>
+          <h3 class="card-title">Aadhaar Verification</h3>
+          <p class="card-subtitle">Verify instantly using OTP</p>
+          <button
+            class="verify-button"
+            id="aadhaarButton"
+            onclick="handleAadhaarVerification()"
+          >
+            Verify Now
+          </button>
+        </div>
+
+        <!-- Driving License Verification Card -->
+        <div class="verification-card" data-card="2" id="dlCard">
+          <div class="status-badge pending-badge" id="dlBadge">
+            <span class="badge-icon">🟠</span>
+            <span class="badge-text">Pending</span>
+          </div>
+          <div class="card-icon" data-icon="🚘">🚘</div>
+          <h3 class="card-title">Driving License</h3>
+          <p class="card-subtitle">Verify with OTP-based authentication</p>
+          <button
+            class="verify-button"
+            id="dlButton"
+            onclick="handleLicenseVerification()"
+          >
+            Verify Now
+          </button>
+        </div>
+
+        <!-- DigiLocker Verification Card -->
+        <div class="verification-card" data-card="3">
+          <div class="card-icon" data-icon="☁️🔒">☁️🔒</div>
+          <h3 class="card-title">Connect via DigiLocker</h3>
+          <p class="card-subtitle">Seamless verification with DigiLocker</p>
+          <button class="verify-button" onclick="handleDigiLocker()">
+            Connect Now
+          </button>
+        </div>
+
+        <!-- Skip Option Card -->
+        <div class="verification-card skip-card" data-card="4">
+          <div class="card-icon" data-icon="⏩">⏩</div>
+          <h3 class="card-title">Will Do It Later</h3>
+          <p class="card-subtitle">Skip verification for now</p>
+          <button class="verify-button skip-button" onclick="handleSkip()">
+            Skip For Now
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Section -->
+      <div class="info-section">
+        <p class="info-text">
+          🔒 Your data is secure and encrypted. We use industry-standard
+          security protocols.
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loadingText">Verifying...</p>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal">
+      <div class="modal-content success-content">
+        <div class="success-icon" id="successIcon">✅</div>
+        <h3 class="modal-title" id="successTitle">Verification Successful!</h3>
+        <p class="modal-message" id="successMessage">
+          Your verification has been completed.
+        </p>
+      </div>
+    </div>
+
+    <!-- Skip Warning Modal -->
+    <div class="warning-modal" id="warningModal">
+      <div class="modal-content warning-content">
+        <div class="warning-icon">⚠️</div>
+        <h3 class="modal-title">Verification Pending</h3>
+        <p class="modal-message">You need to verify before you can:</p>
+        <ul class="restrictions-list">
+          <li>Accept bookings</li>
+          <li>Contact other members</li>
+          <li>Post your own bookings</li>
+        </ul>
+        <div class="modal-buttons">
+          <button class="modal-btn primary-btn" onclick="handleVerifyNow()">
+            Verify Now
+          </button>
+          <button
+            class="modal-btn secondary-btn"
+            onclick="handleContinueAnyway()"
+          >
+            Continue Anyway
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/services/api.js"></script>
+    <script src="../js/pages/verification.js"></script>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripeaz Taxi Partners | Verify OTP</title>
+    <link rel="stylesheet" href="../css/pages/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Main OTP Verification Page -->
+    <div class="main-content" id="mainContent">
+      <!-- Header Strip -->
+      <div class="header-strip">
+        <div class="strip-gradient"></div>
+      </div>
+
+      <!-- Logo and Welcome Section -->
+      <div class="welcome-section">
+        <div class="logo-small">
+          <h2>Tripeaz Taxi</h2>
+          <p>Partners</p>
+        </div>
+      </div>
+
+      <!-- OTP Verification Form -->
+      <div class="login-container">
+        <h3 class="login-title">Verify Phone Number</h3>
+        <p class="login-subtitle" id="otpSubtitle">
+          Enter the OTP sent to your mobile number
+        </p>
+
+        <form class="login-form" id="otpForm">
+          <div class="input-group">
+            <label for="otpInput" class="input-label">Enter OTP</label>
+            <input
+              type="text"
+              id="otpInput"
+              class="mobile-input"
+              placeholder="Enter 6-digit OTP"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              required
+              autocomplete="one-time-code"
+            />
+            <span class="error-message" id="otpError"></span>
+          </div>
+
+          <button type="submit" class="otp-button" id="verifyButton">
+            Verify OTP
+          </button>
+
+          <div class="otp-resend-section">
+            <p class="resend-text">
+              Didn't receive OTP?
+              <button type="button" class="resend-link" id="resendButton" disabled>
+                Resend OTP
+              </button>
+            </p>
+            <span class="cooldown-text" id="cooldownText"></span>
+          </div>
+        </form>
+
+        <div class="help-section">
+          <a href="index.html" class="help-link">Back to Login</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTP Popup Modal -->
+    <div class="otp-popup-overlay" id="otpPopup">
+      <div class="otp-popup">
+        <div class="otp-popup-header">
+          <h3 class="otp-popup-title">OTP Sent!</h3>
+          <p class="otp-popup-subtitle">Your verification code has been sent</p>
+          <p class="otp-popup-mobile" id="otpPopupMobile"></p>
+        </div>
+        <div class="otp-display-box">
+          <p class="otp-code" id="otpCode">000000</p>
+        </div>
+        <div class="otp-popup-actions">
+          <button class="otp-popup-btn otp-popup-btn-copy" id="copyOtpBtn">
+            Copy OTP
+          </button>
+          <button class="otp-popup-btn otp-popup-btn-close" id="closeOtpPopupBtn">
+            Close
+          </button>
+        </div>
+        <p class="otp-copied-message" id="otpCopiedMessage">✓ OTP copied to clipboard!</p>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal-overlay" id="successModal">
+      <div class="success-modal">
+        <div class="success-modal-icon">✅</div>
+        <h3 class="success-modal-title" id="successModalTitle">Success!</h3>
+        <p class="success-modal-message" id="successModalMessage">Phone number verified successfully! Account activated.</p>
+        <button class="success-modal-btn" id="successModalBtn">OK</button>
+      </div>
+    </div>
+
+    <!-- Language Selection Popup (Mandatory) -->
+    <div class="language-popup-overlay" id="languagePopup">
+      <div class="language-popup">
+        <div class="popup-header">
+          <h3>Select Language *</h3>
+        </div>
+
+        <div class="language-list">
+          <div class="language-item" data-lang="english">
+            <span class="flag">🇬🇧</span>
+            <span class="lang-name">English</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+          <div class="language-item" data-lang="hindi">
+            <span class="flag">🇮🇳</span>
+            <span class="lang-name">हिंदी (Hindi)</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+          <div class="language-item" data-lang="gujarati">
+            <span class="flag">🇮🇳</span>
+            <span class="lang-name">ગુજરાતી (Gujarati)</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+          <div class="language-item" data-lang="tamil">
+            <span class="flag">🇮🇳</span>
+            <span class="lang-name">தமிழ் (Tamil)</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+          <div class="language-item" data-lang="telugu">
+            <span class="flag">🇮🇳</span>
+            <span class="lang-name">తెలుగు (Telugu)</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+          <div class="language-item" data-lang="marathi">
+            <span class="flag">🇮🇳</span>
+            <span class="lang-name">मराठी (Marathi)</span>
+            <span class="check-icon" style="display: none">✓</span>
+          </div>
+        </div>
+
+        <button class="continue-button" id="continueLanguageButton" disabled>Continue</button>
+      </div>
+    </div>
+
+    <script>
+      // Show main content immediately (no preloader on OTP verification page)
+      document.addEventListener("DOMContentLoaded", () => {
+        const mainContent = document.getElementById("mainContent");
+        if (mainContent) {
+          mainContent.classList.add("show");
+        }
+      });
+    </script>
+    <script src="../js/services/api.js"></script>
+    <script src="../js/pages/otp-verification.js"></script>
+  </body>
+</html>
+

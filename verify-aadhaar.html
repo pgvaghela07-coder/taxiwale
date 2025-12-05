@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripeaz Taxi Partners | Verify Aadhaar</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+      <!-- Header Strip -->
+      <div class="header-strip">
+        <div class="strip-gradient"></div>
+      </div>
+
+      <!-- Logo and Welcome Section -->
+      <div class="welcome-section">
+        <div class="logo-small">
+          <h2>Tripeaz Taxi</h2>
+          <p>Partners</p>
+        </div>
+      </div>
+
+      <!-- Aadhaar Verification Form -->
+      <div class="login-container">
+        <h3 class="login-title">Verify Aadhaar</h3>
+        <p class="login-subtitle">
+          Enter your 12-digit Aadhaar number to verify your identity
+        </p>
+
+        <form class="login-form" id="aadhaarForm">
+          <div class="input-group">
+            <label for="aadhaarNumber" class="input-label">Aadhaar Number</label>
+            <input
+              type="text"
+              id="aadhaarNumber"
+              class="mobile-input"
+              placeholder="Enter 12-digit Aadhaar number"
+              maxlength="12"
+              pattern="[0-9]{12}"
+              required
+              autocomplete="off"
+            />
+            <span class="error-message" id="aadhaarError"></span>
+          </div>
+
+          <button type="submit" class="otp-button" id="verifyAadhaarButton">
+            Verify Aadhaar
+          </button>
+
+          <div class="help-section">
+            <a href="verification.html" class="help-link">Back to Verification</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- OTP Popup Modal -->
+    <div class="otp-popup-overlay" id="otpPopup">
+      <div class="otp-popup">
+        <div class="otp-popup-header">
+          <h3 class="otp-popup-title">OTP Sent!</h3>
+          <p class="otp-popup-subtitle">Your verification code has been sent</p>
+          <p class="otp-popup-mobile" id="otpPopupMobile"></p>
+        </div>
+        <div class="otp-display-box">
+          <p class="otp-code" id="otpCode">000000</p>
+        </div>
+        <div class="otp-popup-actions">
+          <button class="otp-popup-btn otp-popup-btn-copy" id="copyOtpBtn">
+            Copy OTP
+          </button>
+          <button class="otp-popup-btn otp-popup-btn-close" id="closeOtpPopupBtn">
+            Close
+          </button>
+        </div>
+        <p class="otp-copied-message" id="otpCopiedMessage">✓ OTP copied to clipboard!</p>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal-overlay" id="successModal">
+      <div class="success-modal">
+        <div class="success-modal-icon">✅</div>
+        <h3 class="success-modal-title" id="successModalTitle">Success!</h3>
+        <p class="success-modal-message" id="successModalMessage">OTP sent successfully.</p>
+        <button class="success-modal-btn" id="successModalBtn">OK</button>
+      </div>
+    </div>
+
+    <script>
+      // Show main content immediately
+      document.addEventListener("DOMContentLoaded", () => {
+        const mainContent = document.getElementById("mainContent");
+        if (mainContent) {
+          mainContent.classList.add("show");
+        }
+      });
+    </script>
+    <script src="js/services/api.js"></script>
+    <script src="verify-aadhaar.js"></script>
+  </body>
+</html>
+

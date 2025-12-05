@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripeaz Taxi Partners | Sign Up</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Main Signup Page -->
+    <div class="main-content" id="mainContent">
+      <!-- Header Strip -->
+      <div class="header-strip">
+        <div class="strip-gradient"></div>
+      </div>
+
+      <!-- Logo and Welcome Section -->
+      <div class="welcome-section">
+        <div class="logo-small">
+          <h2>Tripeaz Taxi</h2>
+          <p>Partners</p>
+        </div>
+      </div>
+
+      <!-- Signup Form -->
+      <div class="login-container">
+        <h3 class="login-title">Create Account</h3>
+        <p class="login-subtitle">Sign up to get started</p>
+
+        <form class="login-form" id="signupForm">
+          <div class="input-group">
+            <label for="firstName" class="input-label">First Name *</label>
+            <input
+              type="text"
+              id="firstName"
+              class="mobile-input"
+              placeholder="Enter your first name"
+              required
+              minlength="2"
+              maxlength="50"
+            />
+            <span class="error-message" id="firstNameError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="lastName" class="input-label">Last Name *</label>
+            <input
+              type="text"
+              id="lastName"
+              class="mobile-input"
+              placeholder="Enter your last name"
+              required
+              minlength="2"
+              maxlength="50"
+            />
+            <span class="error-message" id="lastNameError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="businessName" class="input-label">Business Name *</label>
+            <input
+              type="text"
+              id="businessName"
+              class="mobile-input"
+              placeholder="Enter your business/taxi service name"
+              required
+              minlength="2"
+              maxlength="100"
+            />
+            <span class="error-message" id="businessNameError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="dob" class="input-label">Date of Birth *</label>
+            <div class="date-picker-wrapper">
+              <input
+                type="text"
+                id="dob"
+                class="mobile-input date-picker-input"
+                placeholder="dd-mm-yyyy"
+                readonly
+                required
+              />
+              <span class="date-picker-icon">📅</span>
+            </div>
+            <div class="custom-date-picker" id="dobDatePicker">
+              <div class="date-picker-header">
+                <button type="button" class="date-nav-btn" id="prevMonth">‹</button>
+                <div class="date-picker-month-year">
+                  <div class="custom-dropdown date-dropdown-small" id="monthDropdown">
+                    <div class="dropdown-selected date-dropdown-selected" id="monthSelected">
+                      <span class="selected-text" id="monthSelectedText">January</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options date-dropdown-options" id="monthOptions"></div>
+                  </div>
+                  <div class="custom-dropdown date-dropdown-small" id="yearDropdown">
+                    <div class="dropdown-selected date-dropdown-selected" id="yearSelected">
+                      <span class="selected-text" id="yearSelectedText">2006</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options date-dropdown-options" id="yearOptions"></div>
+                  </div>
+                </div>
+                <button type="button" class="date-nav-btn" id="nextMonth">›</button>
+              </div>
+              <div class="date-picker-weekdays">
+                <div class="weekday">Su</div>
+                <div class="weekday">Mo</div>
+                <div class="weekday">Tu</div>
+                <div class="weekday">We</div>
+                <div class="weekday">Th</div>
+                <div class="weekday">Fr</div>
+                <div class="weekday">Sa</div>
+              </div>
+              <div class="date-picker-days" id="datePickerDays"></div>
+              <div class="date-picker-footer">
+                <button type="button" class="date-picker-btn clear-btn" id="clearDate">Clear</button>
+              </div>
+            </div>
+            <input type="hidden" id="dobHidden" name="dob" required />
+            <span class="error-message" id="dobError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="gender" class="input-label">Gender *</label>
+            <div class="custom-dropdown" id="genderDropdown">
+              <div class="dropdown-selected" id="genderSelected">
+                <span class="selected-text placeholder">Select Gender</span>
+                <span class="dropdown-arrow">▼</span>
+              </div>
+              <div class="dropdown-options" id="genderOptions">
+                <div class="dropdown-option" data-value="male">Male</div>
+                <div class="dropdown-option" data-value="female">Female</div>
+                <div class="dropdown-option" data-value="other">Other</div>
+                <div class="dropdown-option" data-value="prefer-not-to-say">Prefer not to say</div>
+              </div>
+            </div>
+            <input type="hidden" id="gender" name="gender" required />
+            <span class="error-message" id="genderError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="mobileNumber" class="input-label">Mobile Number *</label>
+            <input
+              type="tel"
+              id="mobileNumber"
+              class="mobile-input"
+              placeholder="Enter 10-digit mobile number"
+              maxlength="10"
+              pattern="[0-9]{10}"
+              required
+            />
+            <span class="error-message" id="mobileError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="email" class="input-label">Email (Optional)</label>
+            <input
+              type="email"
+              id="email"
+              class="mobile-input"
+              placeholder="Enter your email"
+            />
+            <span class="error-message" id="emailError"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="password" class="input-label">Password *</label>
+            <input
+              type="password"
+              id="password"
+              class="mobile-input"
+              placeholder="Enter password"
+              required
+              minlength="8"
+            />
+            <span class="error-message" id="passwordError"></span>
+            <small class="password-hint">
+              Must be at least 8 characters with uppercase, lowercase, number, and special character
+            </small>
+          </div>
+
+          <div class="input-group">
+            <label for="confirmPassword" class="input-label">Confirm Password *</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              class="mobile-input"
+              placeholder="Confirm your password"
+              required
+            />
+            <span class="error-message" id="confirmPasswordError"></span>
+          </div>
+
+          <button type="submit" class="otp-button" id="signupButton">
+            Create Account
+          </button>
+
+          <span class="error-message" id="signupError" style="display: none; margin-top: 12px;"></span>
+
+          <p class="terms-text">
+            By continuing, you agree to our
+            <a href="#" class="terms-link">Terms & Privacy Policy</a>.
+          </p>
+        </form>
+
+        <div class="help-section">
+          <p class="login-link-text">
+            Already have an account?
+            <a href="index.html" class="help-link">Login</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTP Popup Modal -->
+    <div class="otp-popup-overlay" id="otpPopup">
+      <div class="otp-popup">
+        <div class="otp-popup-header">
+          <h3 class="otp-popup-title">OTP Sent!</h3>
+          <p class="otp-popup-subtitle">Your verification code has been sent</p>
+          <p class="otp-popup-mobile" id="otpPopupMobile"></p>
+        </div>
+        <div class="otp-display-box">
+          <p class="otp-code" id="otpCode">000000</p>
+        </div>
+        <div class="otp-popup-actions">
+          <button class="otp-popup-btn otp-popup-btn-copy" id="copyOtpBtn">
+            Copy OTP
+          </button>
+          <button class="otp-popup-btn otp-popup-btn-close" id="closeOtpPopupBtn">
+            Close
+          </button>
+        </div>
+        <p class="otp-copied-message" id="otpCopiedMessage">✓ OTP copied to clipboard!</p>
+      </div>
+    </div>
+
+    <script>
+      // Show main content immediately (no preloader on signup page)
+      (function() {
+        // Try to show immediately
+        const mainContent = document.getElementById("mainContent");
+        if (mainContent) {
+          mainContent.classList.add("show");
+        }
+      })();
+      
+      // Backup: Ensure it's shown after DOM loads
+      document.addEventListener("DOMContentLoaded", () => {
+        const mainContent = document.getElementById("mainContent");
+        if (mainContent) {
+          mainContent.classList.add("show");
+        }
+      });
+    </script>
+    <script src="js/services/api.js"></script>
+    <script src="signup.js"></script>
+  </body>
+</html>
+

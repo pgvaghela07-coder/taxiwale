@@ -1,0 +1,57 @@
+========================================
+SERVER START COMMANDS (CMD)
+========================================
+
+BACKEND SERVER (Port 5000):
+---------------------------
+cd backend
+npm start
+
+OR
+
+cd "C:\OneDrive\Desktop\New Taxi Wala Partners\backend"
+npm start
+
+
+FRONTEND SERVER (Port 3000):
+----------------------------
+cd "C:\OneDrive\Desktop\New Taxi Wala Partners"
+http-server -p 3000 -o
+
+(If http-server not installed, first run: npm install -g http-server)
+
+
+START BOTH SERVERS:
+-------------------
+Option 1: Double-click START-BOTH.bat
+
+Option 2: Open 2 separate CMD windows:
+
+Window 1 (Backend):
+cd "C:\OneDrive\Desktop\New Taxi Wala Partners\backend"
+npm start
+
+Window 2 (Frontend):
+cd "C:\OneDrive\Desktop\New Taxi Wala Partners"
+http-server -p 3000 -o
+
+
+STOP SERVERS:
+-------------
+Close the CMD windows or press Ctrl+C in each window
+
+
+CHECK IF SERVERS ARE RUNNING:
+------------------------------
+netstat -ano | findstr :5000
+netstat -ano | findstr :3000
+
+
+KILL PROCESS ON PORT:
+---------------------
+netstat -ano | findstr :5000
+taskkill /PID <PID_NUMBER> /F
+
+netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F
+

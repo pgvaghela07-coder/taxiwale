@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripeaz Taxi Partners | Verification Success</title>
+    <link rel="stylesheet" href="verification.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Header Strip -->
+    <div class="header-strip">
+      <div class="strip-gradient"></div>
+    </div>
+
+    <!-- Success Container -->
+    <div class="verification-container" style="padding-top: 80px">
+      <div class="success-wrapper">
+        <!-- Success Icon Animation -->
+        <div class="success-icon-large" id="successIconLarge">✅</div>
+
+        <!-- Success Message -->
+        <h1 class="success-title">Verification Complete!</h1>
+        <p class="success-message">
+          Welcome to Tripeaz Taxi Partners, <span id="userName">Partner</span>! 🎉
+        </p>
+
+        <!-- Achievement Badges -->
+        <div class="achievement-section">
+          <div class="achievement-badge">
+            <span class="achievement-icon">🪪</span>
+            <span class="achievement-text">Aadhaar Verified</span>
+          </div>
+          <div class="achievement-badge">
+            <span class="achievement-icon">🚘</span>
+            <span class="achievement-text">License Verified</span>
+          </div>
+        </div>
+
+        <!-- Welcome Info -->
+        <div class="welcome-info">
+          <p>You now have full access to:</p>
+          <ul class="features-list">
+            <li>✓ Accept bookings instantly</li>
+            <li>✓ Contact other partners</li>
+            <li>✓ Post your own bookings</li>
+            <li>✓ Access all premium features</li>
+          </ul>
+        </div>
+
+        <!-- Continue Button -->
+        <button class="continue-button" onclick="goToDashboard()">
+          Continue to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Get user name from localStorage user data or use default
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      const userName = userData.name || userData.fullName || "Partner";
+      document.getElementById("userName").textContent = userName;
+
+      function goToDashboard() {
+        // Show loading
+        const button = document.querySelector(".continue-button");
+        button.textContent = "Loading...";
+        button.disabled = true;
+
+        // Set verification status in sessionStorage
+        sessionStorage.setItem("verified", "true");
+
+        // Redirect to dashboard with fade transition
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 800);
+      }
+    </script>
+
+    <style>
+      /* Success Page Specific Styles */
+      .success-wrapper {
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        0% {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .success-icon-large {
+        font-size: 120px;
+        margin-bottom: 30px;
+        animation: scaleIn 0.8s ease-out;
+      }
+
+      @keyframes scaleIn {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .success-title {
+        font-size: 42px;
+        font-weight: 700;
+        color: var(--color-white);
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, var(--color-gold), #00c853);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .success-message {
+        font-size: 18px;
+        color: var(--color-silver);
+        margin-bottom: 40px;
+        line-height: 1.6;
+      }
+
+      #userName {
+        color: var(--color-gold);
+        font-weight: 600;
+      }
+
+      .achievement-section {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+      }
+
+      .achievement-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: rgba(0, 200, 83, 0.1);
+        border: 1px solid rgba(0, 200, 83, 0.3);
+        border-radius: 24px;
+        color: #00c853;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .achievement-icon {
+        font-size: 24px;
+      }
+
+      .welcome-info {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 179, 0, 0.2);
+        border-radius: 16px;
+        padding: 32px 24px;
+        margin-bottom: 32px;
+      }
+
+      .welcome-info > p {
+        font-size: 16px;
+        color: var(--color-white);
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+
+      .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;
+      }
+
+      .features-list li {
+        font-size: 15px;
+        color: var(--color-silver);
+        padding: 12px 0;
+        padding-left: 32px;
+        position: relative;
+      }
+
+      .features-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(135deg, var(--color-gold), #00c853);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .features-list li::after {
+        content: "✓";
+        position: absolute;
+        left: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-white);
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .continue-button {
+        width: 100%;
+        padding: 18px 32px;
+        background: linear-gradient(
+          135deg,
+          var(--color-gold),
+          var(--color-orange)
+        );
+        border: none;
+        border-radius: 16px;
+        color: var(--color-white);
+        font-size: 18px;
+        font-weight: 600;
+        font-family: "Inter", sans-serif;
+        cursor: pointer;
+        transition: var(--transition-default);
+        box-shadow: 0 6px 25px var(--shadow-gold);
+      }
+
+      .continue-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px var(--shadow-orange);
+      }
+
+      .continue-button:active {
+        transform: translateY(-1px);
+      }
+
+      .continue-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 480px) {
+        .success-icon-large {
+          font-size: 80px;
+        }
+
+        .success-title {
+          font-size: 32px;
+        }
+
+        .success-message {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,277 @@
+/* ===== BOOKING CARD STYLES - EXACT MATCH TO IMAGE ===== */
+
+/* Card Container */
+.booking-card {
+  background: #121212;
+  border: 1px solid rgba(255, 179, 0, 0.25);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Header Section */
+.card-header {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.15);
+}
+
+.user-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 179, 0, 0.3);
+  padding: 2px;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.verified-badge {
+  background: #00c853;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.booking-id {
+  font-size: 12px;
+  color: #bdbdbd;
+  margin: 0;
+}
+
+/* Pickup Row */
+.pickup-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.pickup-label {
+  color: #ffb300;
+  font-weight: 500;
+}
+
+.pickup-value {
+  color: #fff;
+}
+
+.upload-time {
+  margin-left: auto;
+  color: #bdbdbd;
+  font-size: 12px;
+}
+
+/* Trip Bar */
+.trip-bar {
+  background: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(255, 179, 0, 0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.trip-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.trip-icon {
+  font-size: 16px;
+}
+
+.trip-price-block {
+  text-align: right;
+}
+
+.price {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffb300;
+  line-height: 1.2;
+}
+
+.rate {
+  display: block;
+  font-size: 11px;
+  color: #ffb300;
+  opacity: 0.7;
+  line-height: 1.2;
+}
+
+/* Route Row */
+.route-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.route-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.pin {
+  font-size: 16px;
+  color: #ff69b4;
+}
+
+.arrow-down {
+  font-size: 16px;
+  color: #ffb300;
+  margin-left: 12px;
+  margin: 2px 0 2px 12px;
+}
+
+.vehicle-badge {
+  background: rgba(28, 28, 28, 0.9);
+  border: 1px solid rgba(255, 179, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: -42px;
+}
+
+.car-icon {
+  font-size: 14px;
+}
+
+/* Notes Box */
+.notes-box {
+  background: rgba(13, 13, 13, 0.8);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.notes-title {
+  color: #ffb300;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.notes-text {
+  color: #e0e0e0;
+}
+
+/* Rating Box */
+.rating-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rating-label {
+  font-size: 13px;
+  color: #bdbdbd;
+}
+
+.gold-stars {
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #ffb300;
+}
+
+.review-text {
+  font-size: 12px;
+  color: #bdbdbd;
+}
+
+/* Action Buttons */
+.card-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.whatsapp-btn {
+  background: #25d366;
+  color: #fff;
+}
+
+.call-btn {
+  background: linear-gradient(135deg, #ff9900, #ff7b00);
+  color: #fff;
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
