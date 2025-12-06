@@ -1,27 +1,52 @@
 // API Service for Tripeaz Taxi Partners Frontend
 // Get API URL from localStorage or use default
 // On phone, set this in browser console: localStorage.setItem('API_BASE_URL', 'http://192.168.1.100:5000/api')
-// To auto-detect: Get current page hostname and replace port with 5000
+// Production: Automatically uses Render backend URL
 function getApiBaseUrl() {
-  // Check if API URL is set in localStorage (for phone access)
+  // Check if API URL is set in localStorage (for manual override)
   const storedUrl = localStorage.getItem("API_BASE_URL");
   if (storedUrl) {
     return storedUrl;
   }
 
-  // Auto-detect: If accessing from IP address, use same IP for API
+  // Production Backend URL (Render) - Default for all environments
+  const PRODUCTION_API_URL = "https://taxiwale.onrender.com/api";
+
+  // Auto-detect environment
   const currentHost = window.location.hostname;
-  if (currentHost !== "localhost" && currentHost !== "127.0.0.1") {
-    // Accessing from IP address (e.g., 192.168.1.100:5502)
-    // Use same IP for API (port 5000)
+  const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+  const isLocalNetwork = currentHost.startsWith("192.168.") || 
+                         currentHost.startsWith("10.") || 
+                         currentHost.startsWith("172.16.") ||
+                         currentHost.startsWith("172.17.") ||
+                         currentHost.startsWith("172.18.") ||
+                         currentHost.startsWith("172.19.") ||
+                         currentHost.startsWith("172.20.") ||
+                         currentHost.startsWith("172.21.") ||
+                         currentHost.startsWith("172.22.") ||
+                         currentHost.startsWith("172.23.") ||
+                         currentHost.startsWith("172.24.") ||
+                         currentHost.startsWith("172.25.") ||
+                         currentHost.startsWith("172.26.") ||
+                         currentHost.startsWith("172.27.") ||
+                         currentHost.startsWith("172.28.") ||
+                         currentHost.startsWith("172.29.") ||
+                         currentHost.startsWith("172.30.") ||
+                         currentHost.startsWith("172.31.");
+
+  // Local network: use same IP with port 5000 (for mobile/local device testing)
+  if (isLocalNetwork) {
     return `http://${currentHost}:5000/api`;
   }
 
-  // Default: localhost
-  return "http://localhost:5000/api";
+  // Default: Use Render backend URL (for localhost and production)
+  // Backend is deployed on Render, so use Render URL by default
+  // To use localhost backend: localStorage.setItem('API_BASE_URL', 'http://localhost:5000/api')
+  return PRODUCTION_API_URL;
 }
 
 const API_BASE_URL = getApiBaseUrl();
+console.log("🌐 API Base URL:", API_BASE_URL);
 
 class ApiService {
   constructor() {
@@ -86,8 +111,9 @@ class ApiService {
           "❌ Network Error - Backend server might be down:",
           error
         );
+        const apiUrl = API_BASE_URL.replace('/api', '');
         throw new Error(
-          "Cannot connect to server. Please make sure the backend server is running on http://localhost:5000"
+          `Cannot connect to server. Please check if the backend server is running at ${apiUrl}`
         );
       }
       console.error("❌ API Request Error:", {
