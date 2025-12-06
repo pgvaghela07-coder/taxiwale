@@ -93,27 +93,33 @@ app.use(
         }
       }
 
-      // Production: use specific allowed origins
-      const allowedOrigins = process.env.FRONTEND_URL
-        ? [process.env.FRONTEND_URL]
-        : [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:5502",
-            "http://127.0.0.1:5502",
-            "https://taxiwale.onrender.com", 
-          ];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5502",
+  "http://127.0.0.1:5502",
+  "https://taxiwale.onrender.com", 
+  "https://ranaak.com"                // <--- ADD THIS
+];
 
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);  // mobile / postman support
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log("❌ Blocked by CORS:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders:["Content-Type","Authorization"]
+}));
+
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
