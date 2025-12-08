@@ -655,9 +655,28 @@ function updateMainContent(tabName) {
 // ===== LOAD BOOKINGS FROM API =====
 async function loadBookingsFromAPI() {
   console.log("🔄 loadBookingsFromAPI called");
+  
+  // Ensure bookings view is visible first
+  const bookingsView = document.getElementById("bookingsView");
+  if (bookingsView) {
+    bookingsView.style.display = "block";
+    bookingsView.classList.remove("hidden");
+    bookingsView.style.opacity = "1";
+  }
+  
   const container = document.getElementById("bookingCards");
   if (!container) {
     console.warn("⚠️ bookingCards container not found");
+    // Retry after a short delay
+    setTimeout(() => {
+      const retryContainer = document.getElementById("bookingCards");
+      if (retryContainer) {
+        console.log("🔄 Retrying loadBookingsFromAPI...");
+        loadBookingsFromAPI();
+      } else {
+        console.error("❌ bookingCards container still not found after retry");
+      }
+    }, 500);
     return;
   }
   console.log("✅ bookingCards container found");
@@ -691,13 +710,25 @@ async function loadBookingsFromAPI() {
       }
     }
 
+    // Set a high limit to fetch ALL bookings (backend default is 20, we want all)
+    // Using 1000 as a reasonable upper limit to get all bookings
+    filters.limit = 1000;
+    filters.page = 1;
+    
+    // Don't filter by status or visibility - show ALL bookings from database
+    // The backend has been updated to show all bookings by default
+    
     // Fetch ALL bookings from API (public, active bookings)
     // This shows all available bookings that users can take
     console.log("📤 Calling apiService.getBookings with filters:", filters);
+    console.log("📤 API Base URL:", typeof apiService !== "undefined" ? "Available" : "Not available");
+    console.log("📤 Token available:", localStorage.getItem("token") ? "Yes" : "No");
+    
     const response = await apiService.getBookings(filters);
-    console.log("📦 API Response:", response);
+    console.log("📦 Full API Response:", JSON.stringify(response, null, 2));
     console.log("📦 API Response type:", typeof response);
     console.log("📦 API Response is array:", Array.isArray(response));
+    console.log("📦 API Response keys:", response ? Object.keys(response) : "null");
 
     // Handle different response formats (same as my-bookings.js)
     let bookings = [];
@@ -710,18 +741,30 @@ async function loadBookingsFromAPI() {
     } else if (response && response.bookings && Array.isArray(response.bookings)) {
       bookings = response.bookings;
       console.log("✅ Response has bookings array, count:", bookings.length);
+    } else if (response && response.success && response.data && Array.isArray(response.data)) {
+      bookings = response.data;
+      console.log("✅ Extracted from response.success.data, count:", bookings.length);
     } else {
       console.warn("⚠️ Unexpected response format:", response);
-      // Try to extract from nested structure
-      if (response && response.success && response.data) {
-        bookings = Array.isArray(response.data) ? response.data : [];
-        console.log("✅ Extracted from response.success.data, count:", bookings.length);
+      console.warn("⚠️ Response keys:", response ? Object.keys(response) : "null");
+      // Last attempt: check if response itself is the data
+      if (response && typeof response === 'object' && !response.success) {
+        // Might be a direct object, try to find array
+        for (const key in response) {
+          if (Array.isArray(response[key])) {
+            bookings = response[key];
+            console.log(`✅ Found array in response.${key}, count:`, bookings.length);
+            break;
+          }
+        }
       }
     }
 
     console.log("📋 Final bookings extracted:", bookings.length);
     if (bookings.length > 0) {
-      console.log("📋 First booking sample:", bookings[0]);
+      console.log("📋 First booking sample:", JSON.stringify(bookings[0], null, 2));
+    } else {
+      console.warn("⚠️ No bookings found in response. Full response:", JSON.stringify(response, null, 2));
     }
 
     // Store bookings in Map for WhatsApp interest functionality
@@ -795,9 +838,25 @@ async function loadBookingsFromAPI() {
       updateResultsCount(bookings.length);
     }
 
+    // Ensure bookings view is visible after loading
+    const bookingsView = document.getElementById("bookingsView");
+    if (bookingsView) {
+      bookingsView.style.display = "block";
+      bookingsView.classList.remove("hidden");
+      bookingsView.style.opacity = "1";
+      console.log("✅ Bookings view made visible, showing", bookings.length, "bookings");
+    } else {
+      console.warn("⚠️ bookingsView element not found");
+    }
+
     // Re-initialize filter handlers if needed
     if (typeof initFilterSection === "function") {
       initFilterSection();
+    }
+    
+    // Apply card restrictions if needed
+    if (typeof applyCardRestrictions === "function") {
+      applyCardRestrictions();
     }
   } catch (error) {
     console.error("❌ Error loading bookings:", error);
@@ -808,22 +867,39 @@ async function loadBookingsFromAPI() {
     });
     
     let errorMessage = error.message || "Please try again later";
-    if (error.message && error.message.includes("token")) {
-      errorMessage = "Please login to view bookings";
-    } else if (error.message && error.message.includes("Network")) {
-      errorMessage = "Cannot connect to server. Please check your connection.";
+    let errorTitle = "Failed to load bookings";
+    
+    if (error.message && error.message.includes("token") || error.message.includes("authorization")) {
+      errorTitle = "Authentication Required";
+      errorMessage = "Please login to view bookings. Click the Profile tab to login.";
+    } else if (error.message && error.message.includes("Network") || error.message.includes("fetch")) {
+      errorTitle = "Connection Error";
+      errorMessage = "Cannot connect to server. Please check your internet connection.";
+    } else if (error.message && error.message.includes("API service not loaded")) {
+      errorTitle = "Service Error";
+      errorMessage = "API service is not available. Please refresh the page.";
     }
     
-    container.innerHTML = `
-      <div class="error-bookings" style="text-align: center; padding: 60px 20px; color: #f44336;">
-        <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
-        <h3 style="margin-bottom: 8px;">Failed to load bookings</h3>
-        <p style="margin-bottom: 16px; color: #bdbdbd;">${errorMessage}</p>
-        <button onclick="loadBookingsFromAPI()" style="padding: 12px 24px; background: #ff9900; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
-          🔄 Retry
-        </button>
-      </div>
-    `;
+    if (container) {
+      container.innerHTML = `
+        <div class="error-bookings" style="text-align: center; padding: 60px 20px; color: #f44336;">
+          <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
+          <h3 style="margin-bottom: 8px;">${errorTitle}</h3>
+          <p style="margin-bottom: 16px; color: #bdbdbd;">${errorMessage}</p>
+          <button onclick="loadBookingsFromAPI()" style="padding: 12px 24px; background: #ff9900; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px;">
+            🔄 Retry
+          </button>
+        </div>
+      `;
+    }
+    
+    // Ensure bookings view is visible even on error
+    const bookingsView = document.getElementById("bookingsView");
+    if (bookingsView) {
+      bookingsView.style.display = "block";
+      bookingsView.classList.remove("hidden");
+      bookingsView.style.opacity = "1";
+    }
   }
 }
 
@@ -832,10 +908,184 @@ async function loadBookingsFromAPI() {
 window.debugBookings = function() {
   console.log("🔍 Debugging bookings loading...");
   console.log("1. Checking container:", document.getElementById("bookingCards"));
-  console.log("2. Checking API service:", typeof apiService);
-  console.log("3. Active tab:", activeTab);
-  console.log("4. Calling loadBookingsFromAPI...");
+  console.log("2. Checking bookingsView:", document.getElementById("bookingsView"));
+  console.log("3. Checking API service:", typeof apiService);
+  console.log("4. Checking token:", localStorage.getItem("token") ? "Exists" : "Missing");
+  console.log("5. Active tab:", activeTab);
+  console.log("6. API Base URL:", typeof apiService !== "undefined" ? "Available" : "Not available");
+  console.log("7. Calling loadBookingsFromAPI...");
   loadBookingsFromAPI();
+};
+
+// ===== TEST API CONNECTION =====
+// Call this from browser console: testBookingsAPI()
+window.testBookingsAPI = async function() {
+  try {
+    console.log("🧪 Testing bookings API...");
+    if (typeof apiService === "undefined") {
+      console.error("❌ API service not loaded");
+      return;
+    }
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("❌ No authentication token found. Please login first.");
+      alert("Please login first to view bookings. Go to Profile tab to login.");
+      return;
+    }
+    
+    console.log("✅ Token found:", token.substring(0, 20) + "...");
+    const filters = { limit: 10, page: 1 };
+    console.log("📤 Calling API with filters:", filters);
+    
+    const response = await apiService.getBookings(filters);
+    console.log("📦 Full API Response:", JSON.stringify(response, null, 2));
+    console.log("📦 Response type:", typeof response);
+    console.log("📦 Is array:", Array.isArray(response));
+    
+    if (response && response.data && Array.isArray(response.data)) {
+      console.log("✅ Found data array with", response.data.length, "bookings");
+      if (response.data.length > 0) {
+        console.log("📋 Sample booking:", JSON.stringify(response.data[0], null, 2));
+      }
+    } else if (Array.isArray(response)) {
+      console.log("✅ Response is direct array with", response.length, "bookings");
+      if (response.length > 0) {
+        console.log("📋 Sample booking:", JSON.stringify(response[0], null, 2));
+      }
+    } else {
+      console.warn("⚠️ Unexpected response format:", response);
+    }
+  } catch (error) {
+    console.error("❌ API Test Error:", error);
+    console.error("❌ Error message:", error.message);
+  }
+};
+
+// ===== FETCH ALL BOOKINGS FROM DB AND SHOW IN CONSOLE =====
+// Call this from browser console: fetchAllBookings()
+window.fetchAllBookings = async function() {
+  try {
+    console.log("🔍 Fetching ALL bookings from database...");
+    
+    if (typeof apiService === "undefined") {
+      console.error("❌ API service not loaded");
+      return;
+    }
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("❌ No authentication token found. Please login first.");
+      return;
+    }
+    
+    console.log("✅ Token found");
+    
+    // Fetch all bookings with high limit (no status/visibility filters)
+    const filters = {
+      limit: 1000,
+      page: 1
+    };
+    
+    console.log("📤 Calling API with filters:", filters);
+    console.log("📤 API Endpoint: /api/bookings");
+    
+    const response = await apiService.getBookings(filters);
+    
+    console.log("=".repeat(80));
+    console.log("📦 FULL API RESPONSE");
+    console.log("=".repeat(80));
+    console.log(JSON.stringify(response, null, 2));
+    
+    // Extract bookings array
+    let bookings = [];
+    if (Array.isArray(response)) {
+      bookings = response;
+    } else if (response && response.data && Array.isArray(response.data)) {
+      bookings = response.data;
+    } else if (response && response.success && response.data && Array.isArray(response.data)) {
+      bookings = response.data;
+    }
+    
+    console.log("=".repeat(80));
+    console.log(`📊 TOTAL BOOKINGS FOUND: ${bookings.length}`);
+    console.log("=".repeat(80));
+    
+    if (bookings.length === 0) {
+      console.warn("⚠️ No bookings found in database");
+      console.log("Response summary:", {
+        success: response?.success,
+        count: response?.count,
+        total: response?.total,
+        page: response?.page,
+        pages: response?.pages
+      });
+      return;
+    }
+    
+    // Log summary
+    console.log("\n📋 BOOKINGS SUMMARY:");
+    console.log(`   Total: ${bookings.length}`);
+    console.log(`   Response total: ${response?.total || 'N/A'}`);
+    console.log(`   Response count: ${response?.count || 'N/A'}`);
+    
+    // Group by status
+    const byStatus = {};
+    const byVisibility = {};
+    
+    bookings.forEach(booking => {
+      const status = booking.status || 'unknown';
+      const visibility = booking.visibility || 'unknown';
+      
+      byStatus[status] = (byStatus[status] || 0) + 1;
+      byVisibility[visibility] = (byVisibility[visibility] || 0) + 1;
+    });
+    
+    console.log("\n📊 BOOKINGS BY STATUS:");
+    Object.entries(byStatus).forEach(([status, count]) => {
+      console.log(`   ${status}: ${count}`);
+    });
+    
+    console.log("\n📊 BOOKINGS BY VISIBILITY:");
+    Object.entries(byVisibility).forEach(([visibility, count]) => {
+      console.log(`   ${visibility}: ${count}`);
+    });
+    
+    // Log all bookings
+    console.log("\n" + "=".repeat(80));
+    console.log("📋 ALL BOOKINGS DETAILS:");
+    console.log("=".repeat(80));
+    
+    bookings.forEach((booking, index) => {
+      console.log(`\n[${index + 1}] Booking ID: ${booking._id || booking.bookingId || 'N/A'}`);
+      console.log(`    Status: ${booking.status || 'N/A'}`);
+      console.log(`    Visibility: ${booking.visibility || 'N/A'}`);
+      console.log(`    Vehicle Type: ${booking.vehicleType || 'N/A'}`);
+      console.log(`    Trip Type: ${booking.tripType || 'N/A'}`);
+      console.log(`    Pickup: ${booking.pickup?.city || booking.pickupCity || 'N/A'}`);
+      console.log(`    Drop: ${booking.drop?.city || booking.dropCity || 'N/A'}`);
+      console.log(`    Date/Time: ${booking.dateTime || 'N/A'}`);
+      console.log(`    Amount: ₹${booking.amount?.bookingAmount || booking.bookingAmount || 0}`);
+      console.log(`    Posted By: ${booking.postedBy?.name || 'N/A'} (${booking.postedBy?._id || 'N/A'})`);
+      console.log(`    Created At: ${booking.createdAt || 'N/A'}`);
+      
+      // Full booking object
+      console.log(`    Full Object:`, JSON.stringify(booking, null, 2));
+    });
+    
+    console.log("\n" + "=".repeat(80));
+    console.log("✅ All bookings fetched and displayed above");
+    console.log("=".repeat(80));
+    
+    return bookings;
+  } catch (error) {
+    console.error("❌ Error fetching all bookings:", error);
+    console.error("❌ Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+  }
 };
 
 // ===== LOAD VEHICLES FROM API =====
@@ -1259,7 +1509,7 @@ function createBookingAvailableContent() {
     </div>
 
     <!-- Booking View -->
-    <div class="bookings-view" id="bookingsView">
+    <div class="bookings-view" id="bookingsView" style="display: block;">
 
       <!-- Expandable Filter Sheet (Hidden by default) -->
       <div class="filter-sheet-overlay" id="filterSheetOverlay" onclick="closeFilterSheet()">
