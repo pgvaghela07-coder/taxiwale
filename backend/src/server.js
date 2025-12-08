@@ -74,7 +74,6 @@ io.on("connection", (socket) => {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/bookings", require("./routes/bookings"));
-app.use("/api/vehicles", require("./routes/vehicles"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/verification", require("./routes/verification"));
 app.use("/api/chat", require("./routes/chat"));
@@ -101,9 +100,6 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Accessible on http://localhost:${PORT}`);
   console.log(`🔗 Allowed Frontend: ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
-<<<<<<< HEAD
-});
-=======
 });
 
->>>>>>> 15a32cf58262344cde53ba72ed2f649680c221ed
+
