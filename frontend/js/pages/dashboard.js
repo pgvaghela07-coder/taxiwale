@@ -1,8 +1,9 @@
 ﻿// ===== GLOBAL VARIABLES =====
 let activeTab = "available";
 
-// Data storage for bookings (for WhatsApp interest messages)
+// Data storage for bookings and vehicles (for WhatsApp interest messages)
 const dashboardBookingsMap = new Map(); // Store booking objects by _id
+const dashboardVehiclesMap = new Map(); // Store vehicle objects by _id
 
 // ===== TIME FORMATTING HELPER =====
 /**
@@ -596,26 +597,54 @@ function updateMainContent(tabName) {
 
       // Function to load the appropriate view
       const loadView = () => {
+        // Check which view is active (bookings or vehicles)
+        const vehiclesViewBtn = document.querySelector(
+          '.view-btn[data-view="vehicles"]'
+        );
+        const bookingsViewBtn = document.querySelector(
+          '.view-btn[data-view="bookings"]'
+        );
+        
+        // Check which view button is active
+        const isVehiclesViewActive = vehiclesViewBtn && vehiclesViewBtn.classList.contains("active");
+        const isBookingsViewActive = bookingsViewBtn && bookingsViewBtn.classList.contains("active");
+
         // Check if containers exist
         const bookingCards = document.getElementById("bookingCards");
+        const vehiclesCards = document.getElementById("vehiclesCards");
 
         console.log("🔍 View check:", {
-          bookingCardsExists: !!bookingCards
+          isVehiclesViewActive,
+          isBookingsViewActive,
+          bookingCardsExists: !!bookingCards,
+          vehiclesCardsExists: !!vehiclesCards
         });
 
         // Function to actually load data
         const executeLoad = () => {
-          // Always load bookings view
+          // Always prioritize bookings view by default
           if (bookingCards) {
-            console.log("📋 Loading bookings...");
-            loadBookingsFromAPI();
+            // Only load vehicles if vehicles view is explicitly active
+            if (isVehiclesViewActive && vehiclesCards) {
+              console.log("🚗 Loading vehicles...");
+              loadVehiclesFromAPI();
+            } else {
+              // Default to bookings view - always load bookings
+              console.log("📋 Loading bookings (default view)...");
+              loadBookingsFromAPI();
+            }
           } else {
             console.warn("⚠️ bookingCards container not found, retrying...");
             // Retry after a bit more time
             setTimeout(() => {
               const retryBookingCards = document.getElementById("bookingCards");
+              const retryVehiclesCards = document.getElementById("vehiclesCards");
               if (retryBookingCards) {
-                loadBookingsFromAPI();
+                if (isVehiclesViewActive && retryVehiclesCards) {
+                  loadVehiclesFromAPI();
+                } else {
+                  loadBookingsFromAPI();
+                }
               } else {
                 console.error("❌ bookingCards container still not found after retry");
               }
@@ -655,28 +684,9 @@ function updateMainContent(tabName) {
 // ===== LOAD BOOKINGS FROM API =====
 async function loadBookingsFromAPI() {
   console.log("🔄 loadBookingsFromAPI called");
-  
-  // Ensure bookings view is visible first
-  const bookingsView = document.getElementById("bookingsView");
-  if (bookingsView) {
-    bookingsView.style.display = "block";
-    bookingsView.classList.remove("hidden");
-    bookingsView.style.opacity = "1";
-  }
-  
   const container = document.getElementById("bookingCards");
   if (!container) {
     console.warn("⚠️ bookingCards container not found");
-    // Retry after a short delay
-    setTimeout(() => {
-      const retryContainer = document.getElementById("bookingCards");
-      if (retryContainer) {
-        console.log("🔄 Retrying loadBookingsFromAPI...");
-        loadBookingsFromAPI();
-      } else {
-        console.error("❌ bookingCards container still not found after retry");
-      }
-    }, 500);
     return;
   }
   console.log("✅ bookingCards container found");
@@ -710,25 +720,13 @@ async function loadBookingsFromAPI() {
       }
     }
 
-    // Set a high limit to fetch ALL bookings (backend default is 20, we want all)
-    // Using 1000 as a reasonable upper limit to get all bookings
-    filters.limit = 1000;
-    filters.page = 1;
-    
-    // Don't filter by status or visibility - show ALL bookings from database
-    // The backend has been updated to show all bookings by default
-    
     // Fetch ALL bookings from API (public, active bookings)
     // This shows all available bookings that users can take
     console.log("📤 Calling apiService.getBookings with filters:", filters);
-    console.log("📤 API Base URL:", typeof apiService !== "undefined" ? "Available" : "Not available");
-    console.log("📤 Token available:", localStorage.getItem("token") ? "Yes" : "No");
-    
     const response = await apiService.getBookings(filters);
-    console.log("📦 Full API Response:", JSON.stringify(response, null, 2));
+    console.log("📦 API Response:", response);
     console.log("📦 API Response type:", typeof response);
     console.log("📦 API Response is array:", Array.isArray(response));
-    console.log("📦 API Response keys:", response ? Object.keys(response) : "null");
 
     // Handle different response formats (same as my-bookings.js)
     let bookings = [];
@@ -741,30 +739,18 @@ async function loadBookingsFromAPI() {
     } else if (response && response.bookings && Array.isArray(response.bookings)) {
       bookings = response.bookings;
       console.log("✅ Response has bookings array, count:", bookings.length);
-    } else if (response && response.success && response.data && Array.isArray(response.data)) {
-      bookings = response.data;
-      console.log("✅ Extracted from response.success.data, count:", bookings.length);
     } else {
       console.warn("⚠️ Unexpected response format:", response);
-      console.warn("⚠️ Response keys:", response ? Object.keys(response) : "null");
-      // Last attempt: check if response itself is the data
-      if (response && typeof response === 'object' && !response.success) {
-        // Might be a direct object, try to find array
-        for (const key in response) {
-          if (Array.isArray(response[key])) {
-            bookings = response[key];
-            console.log(`✅ Found array in response.${key}, count:`, bookings.length);
-            break;
-          }
-        }
+      // Try to extract from nested structure
+      if (response && response.success && response.data) {
+        bookings = Array.isArray(response.data) ? response.data : [];
+        console.log("✅ Extracted from response.success.data, count:", bookings.length);
       }
     }
 
     console.log("📋 Final bookings extracted:", bookings.length);
     if (bookings.length > 0) {
-      console.log("📋 First booking sample:", JSON.stringify(bookings[0], null, 2));
-    } else {
-      console.warn("⚠️ No bookings found in response. Full response:", JSON.stringify(response, null, 2));
+      console.log("📋 First booking sample:", bookings[0]);
     }
 
     // Store bookings in Map for WhatsApp interest functionality
@@ -838,25 +824,9 @@ async function loadBookingsFromAPI() {
       updateResultsCount(bookings.length);
     }
 
-    // Ensure bookings view is visible after loading
-    const bookingsView = document.getElementById("bookingsView");
-    if (bookingsView) {
-      bookingsView.style.display = "block";
-      bookingsView.classList.remove("hidden");
-      bookingsView.style.opacity = "1";
-      console.log("✅ Bookings view made visible, showing", bookings.length, "bookings");
-    } else {
-      console.warn("⚠️ bookingsView element not found");
-    }
-
     // Re-initialize filter handlers if needed
     if (typeof initFilterSection === "function") {
       initFilterSection();
-    }
-    
-    // Apply card restrictions if needed
-    if (typeof applyCardRestrictions === "function") {
-      applyCardRestrictions();
     }
   } catch (error) {
     console.error("❌ Error loading bookings:", error);
@@ -867,39 +837,22 @@ async function loadBookingsFromAPI() {
     });
     
     let errorMessage = error.message || "Please try again later";
-    let errorTitle = "Failed to load bookings";
-    
-    if (error.message && error.message.includes("token") || error.message.includes("authorization")) {
-      errorTitle = "Authentication Required";
-      errorMessage = "Please login to view bookings. Click the Profile tab to login.";
-    } else if (error.message && error.message.includes("Network") || error.message.includes("fetch")) {
-      errorTitle = "Connection Error";
-      errorMessage = "Cannot connect to server. Please check your internet connection.";
-    } else if (error.message && error.message.includes("API service not loaded")) {
-      errorTitle = "Service Error";
-      errorMessage = "API service is not available. Please refresh the page.";
+    if (error.message && error.message.includes("token")) {
+      errorMessage = "Please login to view bookings";
+    } else if (error.message && error.message.includes("Network")) {
+      errorMessage = "Cannot connect to server. Please check your connection.";
     }
     
-    if (container) {
-      container.innerHTML = `
-        <div class="error-bookings" style="text-align: center; padding: 60px 20px; color: #f44336;">
-          <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
-          <h3 style="margin-bottom: 8px;">${errorTitle}</h3>
-          <p style="margin-bottom: 16px; color: #bdbdbd;">${errorMessage}</p>
-          <button onclick="loadBookingsFromAPI()" style="padding: 12px 24px; background: #ff9900; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px;">
-            🔄 Retry
-          </button>
-        </div>
-      `;
-    }
-    
-    // Ensure bookings view is visible even on error
-    const bookingsView = document.getElementById("bookingsView");
-    if (bookingsView) {
-      bookingsView.style.display = "block";
-      bookingsView.classList.remove("hidden");
-      bookingsView.style.opacity = "1";
-    }
+    container.innerHTML = `
+      <div class="error-bookings" style="text-align: center; padding: 60px 20px; color: #f44336;">
+        <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
+        <h3 style="margin-bottom: 8px;">Failed to load bookings</h3>
+        <p style="margin-bottom: 16px; color: #bdbdbd;">${errorMessage}</p>
+        <button onclick="loadBookingsFromAPI()" style="padding: 12px 24px; background: #ff9900; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
+          🔄 Retry
+        </button>
+      </div>
+    `;
   }
 }
 
@@ -908,184 +861,10 @@ async function loadBookingsFromAPI() {
 window.debugBookings = function() {
   console.log("🔍 Debugging bookings loading...");
   console.log("1. Checking container:", document.getElementById("bookingCards"));
-  console.log("2. Checking bookingsView:", document.getElementById("bookingsView"));
-  console.log("3. Checking API service:", typeof apiService);
-  console.log("4. Checking token:", localStorage.getItem("token") ? "Exists" : "Missing");
-  console.log("5. Active tab:", activeTab);
-  console.log("6. API Base URL:", typeof apiService !== "undefined" ? "Available" : "Not available");
-  console.log("7. Calling loadBookingsFromAPI...");
+  console.log("2. Checking API service:", typeof apiService);
+  console.log("3. Active tab:", activeTab);
+  console.log("4. Calling loadBookingsFromAPI...");
   loadBookingsFromAPI();
-};
-
-// ===== TEST API CONNECTION =====
-// Call this from browser console: testBookingsAPI()
-window.testBookingsAPI = async function() {
-  try {
-    console.log("🧪 Testing bookings API...");
-    if (typeof apiService === "undefined") {
-      console.error("❌ API service not loaded");
-      return;
-    }
-    
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("❌ No authentication token found. Please login first.");
-      alert("Please login first to view bookings. Go to Profile tab to login.");
-      return;
-    }
-    
-    console.log("✅ Token found:", token.substring(0, 20) + "...");
-    const filters = { limit: 10, page: 1 };
-    console.log("📤 Calling API with filters:", filters);
-    
-    const response = await apiService.getBookings(filters);
-    console.log("📦 Full API Response:", JSON.stringify(response, null, 2));
-    console.log("📦 Response type:", typeof response);
-    console.log("📦 Is array:", Array.isArray(response));
-    
-    if (response && response.data && Array.isArray(response.data)) {
-      console.log("✅ Found data array with", response.data.length, "bookings");
-      if (response.data.length > 0) {
-        console.log("📋 Sample booking:", JSON.stringify(response.data[0], null, 2));
-      }
-    } else if (Array.isArray(response)) {
-      console.log("✅ Response is direct array with", response.length, "bookings");
-      if (response.length > 0) {
-        console.log("📋 Sample booking:", JSON.stringify(response[0], null, 2));
-      }
-    } else {
-      console.warn("⚠️ Unexpected response format:", response);
-    }
-  } catch (error) {
-    console.error("❌ API Test Error:", error);
-    console.error("❌ Error message:", error.message);
-  }
-};
-
-// ===== FETCH ALL BOOKINGS FROM DB AND SHOW IN CONSOLE =====
-// Call this from browser console: fetchAllBookings()
-window.fetchAllBookings = async function() {
-  try {
-    console.log("🔍 Fetching ALL bookings from database...");
-    
-    if (typeof apiService === "undefined") {
-      console.error("❌ API service not loaded");
-      return;
-    }
-    
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("❌ No authentication token found. Please login first.");
-      return;
-    }
-    
-    console.log("✅ Token found");
-    
-    // Fetch all bookings with high limit (no status/visibility filters)
-    const filters = {
-      limit: 1000,
-      page: 1
-    };
-    
-    console.log("📤 Calling API with filters:", filters);
-    console.log("📤 API Endpoint: /api/bookings");
-    
-    const response = await apiService.getBookings(filters);
-    
-    console.log("=".repeat(80));
-    console.log("📦 FULL API RESPONSE");
-    console.log("=".repeat(80));
-    console.log(JSON.stringify(response, null, 2));
-    
-    // Extract bookings array
-    let bookings = [];
-    if (Array.isArray(response)) {
-      bookings = response;
-    } else if (response && response.data && Array.isArray(response.data)) {
-      bookings = response.data;
-    } else if (response && response.success && response.data && Array.isArray(response.data)) {
-      bookings = response.data;
-    }
-    
-    console.log("=".repeat(80));
-    console.log(`📊 TOTAL BOOKINGS FOUND: ${bookings.length}`);
-    console.log("=".repeat(80));
-    
-    if (bookings.length === 0) {
-      console.warn("⚠️ No bookings found in database");
-      console.log("Response summary:", {
-        success: response?.success,
-        count: response?.count,
-        total: response?.total,
-        page: response?.page,
-        pages: response?.pages
-      });
-      return;
-    }
-    
-    // Log summary
-    console.log("\n📋 BOOKINGS SUMMARY:");
-    console.log(`   Total: ${bookings.length}`);
-    console.log(`   Response total: ${response?.total || 'N/A'}`);
-    console.log(`   Response count: ${response?.count || 'N/A'}`);
-    
-    // Group by status
-    const byStatus = {};
-    const byVisibility = {};
-    
-    bookings.forEach(booking => {
-      const status = booking.status || 'unknown';
-      const visibility = booking.visibility || 'unknown';
-      
-      byStatus[status] = (byStatus[status] || 0) + 1;
-      byVisibility[visibility] = (byVisibility[visibility] || 0) + 1;
-    });
-    
-    console.log("\n📊 BOOKINGS BY STATUS:");
-    Object.entries(byStatus).forEach(([status, count]) => {
-      console.log(`   ${status}: ${count}`);
-    });
-    
-    console.log("\n📊 BOOKINGS BY VISIBILITY:");
-    Object.entries(byVisibility).forEach(([visibility, count]) => {
-      console.log(`   ${visibility}: ${count}`);
-    });
-    
-    // Log all bookings
-    console.log("\n" + "=".repeat(80));
-    console.log("📋 ALL BOOKINGS DETAILS:");
-    console.log("=".repeat(80));
-    
-    bookings.forEach((booking, index) => {
-      console.log(`\n[${index + 1}] Booking ID: ${booking._id || booking.bookingId || 'N/A'}`);
-      console.log(`    Status: ${booking.status || 'N/A'}`);
-      console.log(`    Visibility: ${booking.visibility || 'N/A'}`);
-      console.log(`    Vehicle Type: ${booking.vehicleType || 'N/A'}`);
-      console.log(`    Trip Type: ${booking.tripType || 'N/A'}`);
-      console.log(`    Pickup: ${booking.pickup?.city || booking.pickupCity || 'N/A'}`);
-      console.log(`    Drop: ${booking.drop?.city || booking.dropCity || 'N/A'}`);
-      console.log(`    Date/Time: ${booking.dateTime || 'N/A'}`);
-      console.log(`    Amount: ₹${booking.amount?.bookingAmount || booking.bookingAmount || 0}`);
-      console.log(`    Posted By: ${booking.postedBy?.name || 'N/A'} (${booking.postedBy?._id || 'N/A'})`);
-      console.log(`    Created At: ${booking.createdAt || 'N/A'}`);
-      
-      // Full booking object
-      console.log(`    Full Object:`, JSON.stringify(booking, null, 2));
-    });
-    
-    console.log("\n" + "=".repeat(80));
-    console.log("✅ All bookings fetched and displayed above");
-    console.log("=".repeat(80));
-    
-    return bookings;
-  } catch (error) {
-    console.error("❌ Error fetching all bookings:", error);
-    console.error("❌ Error details:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
-  }
 };
 
 // ===== LOAD VEHICLES FROM API =====
@@ -1257,6 +1036,179 @@ function createBookingCard(booking) {
         <button class="action-btn call-btn" onclick="contactCall('${userMobile}')">
           <span class="btn-icon">📞</span>
           <span>Call</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ===== CREATE VEHICLE CARD FROM API DATA =====
+function createVehicleCard(vehicle) {
+  const postedBy = vehicle.postedBy || {};
+  const userName = postedBy.name || "Unknown User";
+  const userMobile = postedBy.mobile || "";
+  const isVerified =
+    postedBy.isVerified || postedBy.verificationStatus === "verified" || false;
+
+  // Format availability date and time
+  const availabilityDate = vehicle.availability?.date
+    ? new Date(vehicle.availability.date)
+    : new Date();
+  const availabilityTime = vehicle.availability?.time || "";
+  const formattedDate = availabilityDate.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  let formattedTime = "";
+  if (availabilityTime) {
+    const [hours, minutes] = availabilityTime.split(":");
+    const timeDate = new Date();
+    timeDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    formattedTime = timeDate.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  // Calculate time ago for when vehicle was posted using helper function
+  const createdAt = vehicle.createdAt
+    ? new Date(vehicle.createdAt)
+    : new Date();
+  const timeAgo = formatTimeAgo(createdAt);
+
+  // Availability status
+  const availabilityStatus = vehicle.availability?.status || "available-later";
+  const isAvailableNow = availabilityStatus === "available-now";
+  const availabilityBadgeClass = isAvailableNow
+    ? "active-now"
+    : "available-later";
+  const availabilityText = isAvailableNow ? "Available Now" : "Available Later";
+
+  // Vehicle type emoji mapping
+  const vehicleEmojis = {
+    sedan: "🚙",
+    suv: "🚗",
+    hatchback: "🚐",
+    traveller: "🚌",
+    bus: "🚍",
+    luxury: "✨",
+  };
+  const vehicleEmoji =
+    vehicleEmojis[vehicle.vehicleType?.toLowerCase()] || "🚗";
+  const vehicleTypeText = vehicle.vehicleType
+    ? vehicle.vehicleType.charAt(0).toUpperCase() + vehicle.vehicleType.slice(1)
+    : "Vehicle";
+
+  // Trip type text
+  const tripTypeText =
+    vehicle.tripType === "round-trip" ? "Round Trip" : "One Way";
+
+  // Location
+  const locationCity = vehicle.location?.city || "N/A";
+  const locationAddress = vehicle.location?.address || "";
+
+  // Commission
+  const commission = vehicle.commission || 0;
+  const commissionText = commission > 0 ? `${commission}% commission` : "";
+
+  // Requirements/Notes
+  const requirements = vehicle.requirements || [];
+  const customRequirement = vehicle.customRequirement || "";
+  const notes =
+    customRequirement ||
+    (requirements.length > 0
+      ? requirements.join(", ")
+      : "No special requirements");
+
+  // Status badge (for dashboard, vehicles are always available/active)
+  const statusClass = "active-status";
+  const statusText = availabilityText;
+
+  // Vehicle ID (similar to booking ID) - display ID for frontend
+  const vehicleDisplayId =
+    vehicle.vehicleId || vehicle._id?.toString().slice(-6) || "N/A";
+
+  // Trip type icon (matching booking card style)
+  const tripTypeIcon = vehicle.tripType === "round-trip" ? "↔" : "→";
+
+  // Check if card should be restricted
+  const profileSkipped = sessionStorage.getItem("profileSkipped") === "true";
+  const verificationSkipped =
+    sessionStorage.getItem("verificationSkipped") === "true";
+  const restrictedClass =
+    profileSkipped || verificationSkipped ? " restricted-card" : "";
+
+  return `
+    <div class="vehicle-manage-card${restrictedClass}" data-vehicle-id="${
+    vehicle._id
+  }" data-vehicle-type="${vehicle.vehicleType || ""}">
+      <!-- Header Row with Vehicle ID, Trip Type, and Status (similar to booking card) -->
+      <div class="card-header-row">
+        <span class="booking-id">#${vehicleDisplayId}</span>
+        <span class="trip-badge">${tripTypeText}</span>
+        <span class="status-badge ${statusClass}">${statusText}</span>
+      </div>
+
+      <!-- Meta Row with Date/Time and Time Ago -->
+      <div class="card-meta-row">
+        <div class="meta-left">
+          ${
+            formattedDate && formattedTime
+              ? `
+          <span class="meta-icon">📅</span>
+          <span class="meta-text">${formattedDate}, ${formattedTime}</span>
+          `
+              : ""
+          }
+        </div>
+        <span class="upload-time">${timeAgo}</span>
+      </div>
+
+      <!-- Trip Summary Row (matching booking card) -->
+      <div class="trip-summary-container">
+        <span class="type-icon">${tripTypeIcon}</span>
+        <span class="trip-type-text">${tripTypeText}</span>
+        <div class="price-section">
+          ${
+            commissionText
+              ? `<span class="trip-price">${commissionText}</span>`
+              : '<span class="trip-price">Free</span>'
+          }
+        </div>
+      </div>
+
+      <!-- Route Block (matching booking card structure) -->
+      <div class="route-container-bookings">
+        <div class="route-left">
+          <div class="route-stop">
+            <span class="pin-icon">📍</span>
+            <span>${locationCity}</span>
+          </div>
+        </div>
+        <div class="vehicle-badge">
+          <span class="vehicle-icon">${vehicleEmoji}</span>
+          <span>${vehicleTypeText}</span>
+        </div>
+      </div>
+
+      <!-- Notes Card -->
+      <div class="notes-card">
+        <span class="notes-label">Notes:</span>
+        <span>${notes}</span>
+      </div>
+
+      <!-- Action Buttons Row (Dashboard - WhatsApp & Call) -->
+      <div class="card-actions-row-1">
+        <button class="action-btn whatsapp-btn" onclick="contactVehicleWhatsApp('${
+          vehicle._id
+        }', '${userMobile}')" aria-label="Contact via WhatsApp">
+          <span class="btn-icon">💬</span> WhatsApp
+        </button>
+        <button class="action-btn call-btn" onclick="contactCall('${userMobile}')" aria-label="Call">
+          <span class="btn-icon">📞</span> Call
         </button>
       </div>
     </div>
@@ -1509,7 +1461,7 @@ function createBookingAvailableContent() {
     </div>
 
     <!-- Booking View -->
-    <div class="bookings-view" id="bookingsView" style="display: block;">
+    <div class="bookings-view" id="bookingsView">
 
       <!-- Expandable Filter Sheet (Hidden by default) -->
       <div class="filter-sheet-overlay" id="filterSheetOverlay" onclick="closeFilterSheet()">
@@ -1604,6 +1556,50 @@ function goToBanner(index) {
     currentBannerIndex = (currentBannerIndex + 1) % 3;
     updateBannerSlide();
   }, 4000);
+}
+
+function updateBannerSlide() {
+  const slides = document.querySelectorAll(".banner-slide");
+  const dots = document.querySelectorAll(".banner-dot");
+
+  slides.forEach((slide, index) => {
+    slide.classList.toggle("active", index === currentBannerIndex);
+  });
+
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === currentBannerIndex);
+  });
+}
+
+// ===== SWITCH VIEW =====
+function switchView(view) {
+  // Only bookings view is supported now
+  if (view === "bookings") {
+    const bookingsView = document.getElementById("bookingsView");
+    if (bookingsView) {
+      bookingsView.style.opacity = "0";
+      setTimeout(() => {
+        bookingsView.style.opacity = "1";
+        // Load bookings when bookings view becomes visible
+        const bookingCards = document.getElementById("bookingCards");
+        if (bookingCards) {
+          // Check if API service is available, then load bookings
+          if (typeof apiService !== "undefined") {
+            loadBookingsFromAPI();
+          } else {
+            // Load API service first, then load bookings
+            const script = document.createElement("script");
+            script.src = "js/services/api.js";
+            script.onload = () => {
+              loadBookingsFromAPI();
+            };
+            document.head.appendChild(script);
+          }
+        }
+      }, 10);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
 }
 
 function updateBannerSlide() {
@@ -2010,6 +2006,93 @@ Please let me know if this booking is still available.`;
 }
 
 // WhatsApp interest message for vehicles
+function contactVehicleWhatsApp(vehicleId, userMobile) {
+  // Check if restrictions should be applied
+  if (shouldRestrictActions()) {
+    handleRestrictedAction();
+    return;
+  }
+
+  // Ensure vehicleId is a string for Map lookup
+  const vehicleIdKey = String(vehicleId);
+
+  // Retrieve vehicle data from Map
+  const vehicle = dashboardVehiclesMap.get(vehicleIdKey);
+
+  if (!vehicle) {
+    console.error(
+      "❌ [contactVehicleWhatsApp] Vehicle not found:",
+      vehicleIdKey
+    );
+    console.log(
+      "🔍 Available vehicle IDs in Map:",
+      Array.from(dashboardVehiclesMap.keys())
+    );
+    alert("⚠️ Vehicle data not found. Please refresh the page.");
+    return;
+  }
+
+  if (!userMobile) {
+    alert("⚠️ Contact number not available for this vehicle.");
+    return;
+  }
+
+  // Extract vehicle details
+  const vehicleDisplayId =
+    vehicle.vehicleId || vehicle._id?.toString().slice(-6) || "N/A";
+  const locationCity = vehicle.location?.city || "N/A";
+
+  // Vehicle type
+  const vehicleTypeText = vehicle.vehicleType
+    ? vehicle.vehicleType.charAt(0).toUpperCase() + vehicle.vehicleType.slice(1)
+    : "N/A";
+
+  // Format availability date/time if available
+  let availabilityText = "";
+  if (vehicle.availability?.date) {
+    const availabilityDate = new Date(vehicle.availability.date);
+    const formattedDate = availabilityDate.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    const availabilityTime = vehicle.availability?.time || "";
+    if (availabilityTime) {
+      const [hours, minutes] = availabilityTime.split(":");
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const formattedTime = timeDate.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      availabilityText = `\n*Available:* ${formattedDate} at ${formattedTime}`;
+    } else {
+      availabilityText = `\n*Available:* ${formattedDate}`;
+    }
+  }
+
+  // Format interest message
+  const message = `Hello! I'm interested in your free vehicle that you have posted on Tripeaz Taxi Partners.
+
+*Vehicle ID:* #${vehicleDisplayId}
+*Location:* ${locationCity}
+*Vehicle Type:* ${vehicleTypeText}${availabilityText}
+
+Please let me know if this vehicle is still available.`;
+
+  // Clean mobile number (remove +, spaces, dashes)
+  const cleanNumber = userMobile.replace(/[\s\+\-]/g, "");
+
+  // Encode message using URLSearchParams
+  const params = new URLSearchParams();
+  params.set("text", message);
+  const whatsappUrl = `https://wa.me/${cleanNumber}?${params.toString()}`;
+
+  // Open WhatsApp
+  window.open(whatsappUrl, "_blank");
+}
+
 // Keep existing function as fallback for simple contact
 function contactWhatsApp(number) {
   const cleanNumber = number.replace(/[\s\+\-]/g, "");

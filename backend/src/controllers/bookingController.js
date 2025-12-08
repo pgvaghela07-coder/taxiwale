@@ -19,21 +19,11 @@ exports.getBookings = async (req, res) => {
       sort = "-createdAt",
     } = req.query;
 
-    // Build filter - show all bookings by default (remove status and visibility restrictions)
-    const filter = {};
-    
-    // Only apply visibility filter if explicitly requested
-    // For dashboard, we want to show all bookings
-    if (req.query.visibility) {
-      filter.visibility = req.query.visibility;
-    }
-    
-    // Only apply status filter if explicitly requested
-    // If status is "all" or not provided, show all statuses
-    if (status && status !== "all") {
-      filter.status = status;
-    }
-    
+    // Build filter - only show active bookings by default
+    const filter = { 
+      visibility: "public",
+      status: status || "active" // Only show active bookings unless status is specified
+    };
     if (vehicleType) filter.vehicleType = vehicleType;
     if (tripType) filter.tripType = tripType;
     if (pickupCity) filter["pickup.city"] = new RegExp(pickupCity, "i");

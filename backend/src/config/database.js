@@ -5,24 +5,21 @@ const connectDB = async () => {
     const mongoURI = process.env.MONGODB_URI;
 
     if (!mongoURI) {
-      const error = new Error("MONGODB_URI not set in .env file");
-      console.error("❌", error.message);
-      console.error("💡 Please set MONGODB_URI in backend/.env file");
-      console.error("   Example: MONGODB_URI=mongodb://localhost:27017/taxiwale");
-      throw error; // Throw error to prevent server from starting
+      console.warn(
+        "⚠️  MONGODB_URI not set in .env, skipping database connection"
+      );
+      console.warn("   For MongoDB Atlas, update MONGODB_URI in backend/.env");
+      return; // Early return to prevent undefined connection attempts
     }
 
     // Connect with timeout settings
     const conn = await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000, // Increased to 10 seconds
+      serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
     });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
   } catch (error) {
     console.error("❌ Database connection error:", error.message);
     console.error("\n💡 Solutions:");
@@ -31,9 +28,14 @@ const connectDB = async () => {
       "   2. Use MongoDB Atlas (cloud) - See backend/MONGODB_SETUP.md"
     );
     console.error("   3. Update MONGODB_URI in backend/.env file");
-    console.error("\n❌ Server cannot start without database connection.\n");
-    // Always throw error to prevent server from starting without DB
-    throw error;
+    console.error(
+      "\n⚠️  Server will continue but database operations will fail."
+    );
+    console.error("   Fix the connection and restart the server.\n");
+    // Don't exit in development - allow server to start for testing
+    if (process.env.NODE_ENV === "production") {
+      process.exit(1);
+    }
   }
 };
 

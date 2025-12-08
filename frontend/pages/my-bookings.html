@@ -70,6 +70,10 @@
       <span>📋</span>
       <span>Bookings</span>
     </button>
+    <button class="sub-tab-btn" onclick="switchSubcategory('vehicles')" id="vehiclesSubTab" data-category="vehicles">
+      <span>🚗</span>
+      <span>Free Vehicles</span>
+    </button>
   </div>
 
   <!-- Bookings Container -->
@@ -80,6 +84,10 @@
       <div class="subcategory-content active" id="pendingBookingsContent">
         <!-- Bookings will be loaded dynamically from API -->
       </div>
+      <!-- Vehicles subcategory -->
+      <div class="subcategory-content" id="pendingVehiclesContent">
+        <!-- Vehicles will be loaded dynamically from API -->
+      </div>
     </div>
 
     <!-- History Tab Content -->
@@ -87,6 +95,10 @@
       <!-- Bookings subcategory -->
       <div class="subcategory-content active" id="historyBookingsContent">
         <!-- Bookings will be loaded dynamically from API -->
+      </div>
+      <!-- Vehicles subcategory -->
+      <div class="subcategory-content" id="historyVehiclesContent">
+        <!-- Vehicles will be loaded dynamically from API -->
       </div>
     </div>
   </main>
@@ -186,6 +198,107 @@
         <button class="submit-closure-btn" id="submitCloseBtn" onclick="submitClosure()">
           Close Booking
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Vehicle Modal -->
+  <div class="modal-overlay" id="editVehicleModal" onclick="closeEditVehicleModal()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; margin: auto; padding: 0">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #2a2a2a">
+        <h3>Edit Free Vehicle</h3>
+        <button class="close-modal-btn" onclick="closeEditVehicleModal()">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: calc(90vh - 80px); overflow-y: auto; padding: 20px">
+        <form class="booking-form" id="editVehicleForm" onsubmit="event.preventDefault(); submitVehicleEdit();">
+          <input type="hidden" id="editVehicleId" />
+
+          <!-- Vehicle Type Selection -->
+          <div class="form-section">
+            <label class="section-label">Select Vehicle Type</label>
+            <div class="vehicle-types">
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('sedan')" data-vehicle="sedan">
+                <span class="vehicle-icon">🚙</span>
+                <span>Sedan</span>
+              </button>
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('hatchback')"
+                data-vehicle="hatchback">
+                <span class="vehicle-icon">🚐</span>
+                <span>Hatchback</span>
+              </button>
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('suv')" data-vehicle="suv">
+                <span class="vehicle-icon">🚗</span>
+                <span>SUV</span>
+              </button>
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('traveller')"
+                data-vehicle="traveller">
+                <span class="vehicle-icon">🚌</span>
+                <span>Traveller</span>
+              </button>
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('bus')" data-vehicle="bus">
+                <span class="vehicle-icon">🚍</span>
+                <span>Bus</span>
+              </button>
+              <button type="button" class="vehicle-option" onclick="selectEditVehicle('luxury')" data-vehicle="luxury">
+                <span class="vehicle-icon">✨</span>
+                <span>Luxury</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Date & Time -->
+          <div class="form-section">
+            <label class="section-label">Select Date & Time</label>
+            <div class="date-time-row">
+              <div class="input-group">
+                <span class="input-icon">📅</span>
+                <input type="date" id="editVehicleDate" class="form-input date-input" required />
+              </div>
+              <div class="input-group">
+                <span class="input-icon">🕐</span>
+                <input type="time" id="editVehicleTime" class="form-input time-input" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Pickup & Drop Locations -->
+          <div class="form-section">
+            <label class="section-label">Pickup & Drop Locations</label>
+            <div class="location-row">
+              <div class="input-group">
+                <span class="input-icon">📍</span>
+                <select id="editVehiclePickupCity" class="form-input" required>
+                  <option value="">Pickup City</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <span class="input-icon">📍</span>
+                <select id="editVehicleDropCity" class="form-input" required>
+                  <option value="">Drop City</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amount Driver Will Get & Submit Button Row -->
+          <div class="form-section">
+            <div class="amount-submit-row">
+              <div class="input-group amount-group">
+                <label class="section-label">Amount Driver Will Get</label>
+                <div class="amount-input-wrapper">
+                  <span class="currency">₹</span>
+                  <input type="number" id="editVehicleCommission" class="form-input amount-input" placeholder="0"
+                    value="0" min="0" onchange="validateEditVehicleCommission()" />
+                </div>
+              </div>
+              <button style="margin-top: 50px;" type="submit" class="submit-button" id="editVehicleSubmitBtn">
+                Update Vehicle
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -378,6 +491,10 @@
       <div class="fab-popup-option" onclick="handleUploadBooking()">
         <span class="fab-option-icon">📄</span>
         <span class="fab-option-label">Upload New Booking</span>
+      </div>
+      <div class="fab-popup-option" onclick="handleUploadVehicle()">
+        <span class="fab-option-icon">🚗</span>
+        <span class="fab-option-label">Upload Free Vehicle</span>
       </div>
       <div class="fab-popup-option cancel" onclick="closeFABPopup()">
         <span class="fab-option-icon">✕</span>
