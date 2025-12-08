@@ -9,8 +9,8 @@ function getApiBaseUrl() {
     return storedUrl;
   }
 
-  // Production Backend URL (Render) - Default for all environments
-  const PRODUCTION_API_URL = "https://taxiwale.onrender.com/api";
+  // Production Backend URL - Default for all environments
+  const PRODUCTION_API_URL = "https://taxiwalepartners.com/api";
 
   // Auto-detect environment
   const currentHost = window.location.hostname;
@@ -39,8 +39,8 @@ function getApiBaseUrl() {
     return `http://${currentHost}:5000/api`;
   }
 
-  // Default: Use Render backend URL (for localhost and production)
-  // Backend is deployed on Render, so use Render URL by default
+  // Default: Use production backend URL (for localhost and production)
+  // Backend is deployed at https://taxiwalepartners.com
   // To use localhost backend: localStorage.setItem('API_BASE_URL', 'http://localhost:5000/api')
   return PRODUCTION_API_URL;
 }
