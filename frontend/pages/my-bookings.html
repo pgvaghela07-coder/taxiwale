@@ -305,6 +305,21 @@
           </div>
         </div>
 
+        <!-- Note Field -->
+        <div class="form-section">
+          <label class="section-label">Note</label>
+          <div class="input-group">
+            <textarea
+              id="editCustomRequirement"
+              class="form-textarea"
+              placeholder="Add special instructions (optional)..."
+              oninput="updateEditCharCount()"
+              rows="3"
+            ></textarea>
+            <div class="char-count" id="editCharCount">0/250 words</div>
+          </div>
+        </div>
+
         <!-- Amount Field -->
         <div class="form-section">
           <div class="location-row">

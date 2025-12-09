@@ -1380,10 +1380,9 @@ async function submitBookingEdit() {
     return;
   }
 
-  // Get custom requirement
-  const customRequirement = document
-    .getElementById("editCustomRequirement")
-    .value.trim();
+  // Get custom requirement (handle if field doesn't exist)
+  const customRequirementEl = document.getElementById("editCustomRequirement");
+  const customRequirement = customRequirementEl ? customRequirementEl.value.trim() : "";
 
   // Prepare update data
   const updateData = {
