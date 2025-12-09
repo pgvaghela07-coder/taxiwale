@@ -708,15 +708,30 @@ async function loadBookingsFromAPI() {
     // Get current filters from filterState (if exists)
     const filters = {};
     if (typeof filterState !== "undefined") {
-      if (filterState.vehicleType && filterState.vehicleType !== "all") {
-        filters.vehicleType = filterState.vehicleType;
+      // Vehicle filter - check vehicles array (not vehicleType)
+      if (
+        filterState.vehicles &&
+        filterState.vehicles.length > 0 &&
+        !filterState.vehicles.includes("all")
+      ) {
+        // Use first selected vehicle (or can support multiple)
+        filters.vehicleType = filterState.vehicles[0];
       }
+      // Pickup city filter
       if (
         filterState.pickupLocations &&
         filterState.pickupLocations.length > 0 &&
         !filterState.pickupLocations.includes("all")
       ) {
         filters.pickupCity = filterState.pickupLocations[0];
+      }
+      // Drop city filter
+      if (
+        filterState.dropLocations &&
+        filterState.dropLocations.length > 0 &&
+        !filterState.dropLocations.includes("all")
+      ) {
+        filters.dropCity = filterState.dropLocations[0];
       }
     }
 
@@ -3346,8 +3361,15 @@ function selectVehicleOption(value) {
   updateVehicleOptionsState();
   updateVehicleDropdownText();
   updateFilterChips();
-  applyBookingFilters();
   saveFilters();
+  
+  // Reload bookings from API with new filters
+  if (typeof loadBookingsFromAPI === "function") {
+    loadBookingsFromAPI();
+  } else {
+    // Fallback: apply client-side filters if API reload not available
+    applyBookingFilters();
+  }
 }
 
 // Select city option (for pickup or drop)
@@ -3384,8 +3406,15 @@ function selectCityOption(type, value) {
     updateDropDropdownText();
   }
   updateFilterChips();
-  applyBookingFilters();
   saveFilters();
+  
+  // Reload bookings from API with new filters
+  if (typeof loadBookingsFromAPI === "function") {
+    loadBookingsFromAPI();
+  } else {
+    // Fallback: apply client-side filters if API reload not available
+    applyBookingFilters();
+  }
 }
 
 // Update vehicle options visual state
@@ -3581,8 +3610,15 @@ function removeFilterChip(type, value) {
   }
   updateVehicleDropdownText();
   updateFilterChips();
-  applyBookingFilters();
   saveFilters();
+  
+  // Reload bookings from API with new filters
+  if (typeof loadBookingsFromAPI === "function") {
+    loadBookingsFromAPI();
+  } else {
+    // Fallback: apply client-side filters if API reload not available
+    applyBookingFilters();
+  }
 }
 
 // Apply booking filters
