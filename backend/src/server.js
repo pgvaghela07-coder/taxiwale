@@ -10,7 +10,10 @@ const errorHandler = require("./middleware/errorHandler");
 
 // Connect DB
 connectDB().catch((err) => {
-  console.error("Database connection failed, but server will continue:", err.message);
+  console.error(
+    "Database connection failed, but server will continue:",
+    err.message
+  );
 });
 
 const app = express();
@@ -23,10 +26,10 @@ const allowedOrigins = [
   "http://localhost:5502",
   "http://127.0.0.1:5502",
   "https://taxiwale.onrender.com",
-  "https://taxiwalepartners.com",           // Backend domain
-  "https://www.taxiwalepartners.com",        // Backend domain with www
-  "https://ranaak.com",                     // Your frontend added
-  "https://ranaak.com/frontend/pages"        // In case routing needs it
+  "https://taxiwalepartners.com", // Backend domain
+  "https://www.taxiwalepartners.com", // Backend domain with www
+  "https://ranaak.com", // Your frontend added
+  "https://ranaak.com/frontend/pages", // In case routing needs it
 ];
 
 if (process.env.FRONTEND_URL) {
@@ -34,18 +37,20 @@ if (process.env.FRONTEND_URL) {
 }
 
 // --------------- Global CORS Middleware ---------------
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // mobile / postman support
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // mobile / postman support
+      if (allowedOrigins.includes(origin)) return callback(null, true);
 
-    console.log("❌ CORS Blocked:", origin);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+      console.log("❌ CORS Blocked:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -58,8 +63,8 @@ app.use(securityHeaders);
 const io = socketIo(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 io.on("connection", (socket) => {
@@ -83,26 +88,45 @@ app.use("/api/chat", require("./routes/chat"));
 
 // Health
 app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString(), environment: process.env.NODE_ENV || "development" });
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+  });
 });
 
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
     message: "Tripeaz Taxi Partners API",
-    version: "1.0.0"
+    version: "1.0.0",
   });
 });
 
 // Error Handler
 app.use(errorHandler);
 
-// --------------- Start Server ---------------
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌍 Accessible on http://localhost:${PORT}`);
-  console.log(`🔗 Allowed Frontend: ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
+// --------------- Start Server with Auto Free Port ---------------
+
+const net = require("net");
+
+function findAvailablePort(startPort, callback) {
+  const server = net.createServer();
+  server.listen(startPort, () => {
+    server.close(() => callback(startPort)); // Port free है
+  });
+
+  server.on("error", () => {
+    // Port busy है → अगला port check करो
+    findAvailablePort(startPort + 1, callback);
+  });
+}
+
+const START_PORT = parseInt(process.env.PORT) || 5000;
+
+findAvailablePort(START_PORT, (port) => {
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${port}`);
+    console.log(`🌍 Accessible on http://localhost:${port}`);
+  });
 });
-
-
