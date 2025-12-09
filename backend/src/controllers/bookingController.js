@@ -21,13 +21,14 @@ exports.getBookings = async (req, res) => {
 
     // Build filter - only show active bookings by default
     const filter = { 
-      visibility: "public",
       status: status || "active" // Only show active bookings unless status is specified
     };
     if (vehicleType) filter.vehicleType = vehicleType;
     if (tripType) filter.tripType = tripType;
     if (pickupCity) filter["pickup.city"] = new RegExp(pickupCity, "i");
     if (dropCity) filter["drop.city"] = new RegExp(dropCity, "i");
+
+    console.log("🔍 [getBookings] Filter applied:", JSON.stringify(filter, null, 2));
 
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -40,6 +41,8 @@ exports.getBookings = async (req, res) => {
       .limit(parseInt(limit));
 
     const total = await Booking.countDocuments(filter);
+    
+    console.log(`📊 [getBookings] Found ${bookings.length} bookings (total: ${total}) with filter:`, filter);
 
     res.json({
       success: true,
@@ -212,66 +215,103 @@ exports.getBooking = async (req, res) => {
 // @route   POST /api/bookings
 // @access  Private
 exports.createBooking = async (req, res) => {
-  try {
-    const bookingData = {
-      ...req.body,
-      postedBy: req.userId,
-    };
+  let retryCount = 0;
+  const maxRetries = 3;
 
-    console.log("Creating booking with data:", JSON.stringify(bookingData, null, 2));
+  while (retryCount < maxRetries) {
+    try {
+      const bookingData = {
+        ...req.body,
+        postedBy: req.userId,
+      };
 
-    const booking = await Booking.create(bookingData);
-
-    // Populate user data
-    await booking.populate("postedBy", "name mobile email");
-
-    // Send confirmation email
-    const user = await User.findById(req.userId);
-    if (user && user.email) {
-      try {
-        await emailService.sendBookingConfirmation(user.email, booking);
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
+      // Clear bookingId to force regeneration on each retry
+      if (retryCount > 0) {
+        delete bookingData.bookingId;
       }
-    }
 
-    res.status(201).json({
-      success: true,
-      message: "Booking created successfully",
-      data: booking,
-    });
-  } catch (error) {
-    console.error("Create Booking Error:", error);
-    console.error("Error details:", {
-      name: error.name,
-      message: error.message,
-      errors: error.errors,
-    });
+      console.log(`Creating booking (attempt ${retryCount + 1}) with data:`, JSON.stringify(bookingData, null, 2));
 
-    // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map(e => e.message).join(', ');
-      return res.status(400).json({
+      const booking = await Booking.create(bookingData);
+
+      // Populate user data
+      await booking.populate("postedBy", "name mobile email");
+
+      // Send confirmation email
+      const user = await User.findById(req.userId);
+      if (user && user.email) {
+        try {
+          await emailService.sendBookingConfirmation(user.email, booking);
+        } catch (emailError) {
+          console.error("Email sending failed:", emailError);
+        }
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: "Booking created successfully",
+        data: booking,
+      });
+    } catch (error) {
+      console.error(`Create Booking Error (attempt ${retryCount + 1}):`, error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+      });
+
+      // Handle validation errors
+      if (error.name === 'ValidationError') {
+        const errors = Object.values(error.errors).map(e => e.message).join(', ');
+        return res.status(400).json({
+          success: false,
+          message: `Validation error: ${errors}`,
+          error: error.message,
+        });
+      }
+
+      // Handle duplicate key errors - retry with new ID
+      if (error.code === 11000) {
+        retryCount++;
+        console.log(`⚠️ Duplicate booking ID detected, retrying (attempt ${retryCount}/${maxRetries})...`);
+        if (retryCount >= maxRetries) {
+          console.error("❌ Max retries reached for duplicate booking ID");
+          // Try one more time with a completely unique timestamp-based ID
+          try {
+            const bookingData = {
+              ...req.body,
+              postedBy: req.userId,
+              bookingId: `BW${Date.now()}${Math.floor(Math.random() * 10000)}`, // Force unique ID
+            };
+            const booking = await Booking.create(bookingData);
+            await booking.populate("postedBy", "name mobile email");
+            return res.status(201).json({
+              success: true,
+              message: "Booking created successfully",
+              data: booking,
+            });
+          } catch (finalError) {
+            console.error("❌ Final attempt also failed:", finalError);
+            return res.status(400).json({
+              success: false,
+              message: "Unable to create booking. Please try again in a moment.",
+              error: finalError.message,
+            });
+          }
+        }
+        // Wait longer before retrying to allow ID generation to catch up
+        await new Promise(resolve => setTimeout(resolve, 200 * retryCount));
+        continue; // Retry the creation
+      }
+
+      // For other errors, return immediately
+      return res.status(500).json({
         success: false,
-        message: `Validation error: ${errors}`,
+        message: error.message || "Failed to create booking",
         error: error.message,
       });
     }
-
-    // Handle duplicate key errors
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Duplicate booking ID. Please try again.",
-        error: error.message,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to create booking",
-      error: error.message,
-    });
   }
 };
 

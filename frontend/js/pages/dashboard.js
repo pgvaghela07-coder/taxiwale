@@ -730,25 +730,80 @@ async function loadBookingsFromAPI() {
 
     // Handle different response formats (same as my-bookings.js)
     let bookings = [];
+    console.log("🔍 [DEBUG] Full response object:", JSON.stringify(response, null, 2));
+    console.log("🔍 [DEBUG] Response keys:", Object.keys(response || {}));
+    
     if (Array.isArray(response)) {
       bookings = response;
       console.log("✅ Response is direct array, count:", bookings.length);
     } else if (response && response.data && Array.isArray(response.data)) {
       bookings = response.data;
       console.log("✅ Response has data array, count:", bookings.length);
+      console.log("🔍 [DEBUG] First booking in data:", bookings[0]);
     } else if (response && response.bookings && Array.isArray(response.bookings)) {
       bookings = response.bookings;
       console.log("✅ Response has bookings array, count:", bookings.length);
     } else {
       console.warn("⚠️ Unexpected response format:", response);
+      console.warn("⚠️ Response structure:", {
+        hasSuccess: !!response?.success,
+        hasData: !!response?.data,
+        dataType: typeof response?.data,
+        isDataArray: Array.isArray(response?.data),
+        hasBookings: !!response?.bookings,
+        responseKeys: Object.keys(response || {})
+      });
       // Try to extract from nested structure
       if (response && response.success && response.data) {
         bookings = Array.isArray(response.data) ? response.data : [];
         console.log("✅ Extracted from response.success.data, count:", bookings.length);
+      } else if (response && response.success === true && response.count === 0) {
+        console.log("ℹ️ API returned success but count is 0 - no bookings in database");
+        bookings = [];
       }
     }
 
     console.log("📋 Final bookings extracted:", bookings.length);
+    
+    // ===== COMPREHENSIVE BOOKINGS CONSOLE LOG =====
+    console.log("=".repeat(80));
+    console.log("📊 ALL BOOKINGS FROM DATABASE:");
+    console.log("=".repeat(80));
+    console.log(`Total Bookings: ${bookings.length}`);
+    console.log("");
+    
+    if (bookings.length > 0) {
+      bookings.forEach((booking, index) => {
+        console.log(`\n📋 Booking #${index + 1}:`);
+        console.log("─".repeat(80));
+        console.log("ID:", booking._id);
+        console.log("Booking ID:", booking.bookingId || "N/A");
+        console.log("Status:", booking.status || "N/A");
+        console.log("Trip Type:", booking.tripType || "N/A");
+        console.log("Vehicle Type:", booking.vehicleType || "N/A");
+        console.log("Date & Time:", booking.dateTime ? new Date(booking.dateTime).toLocaleString() : "N/A");
+        console.log("Pickup City:", booking.pickup?.city || "N/A");
+        console.log("Pickup Location:", booking.pickup?.location || "N/A");
+        console.log("Drop City:", booking.drop?.city || "N/A");
+        console.log("Drop Location:", booking.drop?.location || "N/A");
+        console.log("Amount:", booking.amount?.bookingAmount ? `₹${booking.amount.bookingAmount}` : "N/A");
+        console.log("Custom Requirement:", booking.customRequirement || "None");
+        console.log("Posted By:", booking.postedBy?.name || "N/A", `(${booking.postedBy?.mobile || "N/A"})`);
+        console.log("Posted By ID:", booking.postedBy?._id || booking.postedBy || "N/A");
+        console.log("Assigned To:", booking.assignedTo?.name || booking.assignedTo || "Not Assigned");
+        console.log("Created At:", booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A");
+        console.log("Updated At:", booking.updatedAt ? new Date(booking.updatedAt).toLocaleString() : "N/A");
+        console.log("Full Booking Object:", booking);
+      });
+    } else {
+      console.log("⚠️ No bookings found in database");
+    }
+    
+    console.log("=".repeat(80));
+    console.log("📊 END OF BOOKINGS LIST");
+    console.log("=".repeat(80));
+    // ===== END OF CONSOLE LOG =====
+    
     if (bookings.length > 0) {
       console.log("📋 First booking sample:", bookings[0]);
     }
@@ -768,11 +823,22 @@ async function loadBookingsFromAPI() {
 
     if (bookings.length === 0) {
       console.warn("⚠️ No bookings found in response");
+      console.log("🔍 [DEBUG] Checking why no bookings:", {
+        responseSuccess: response?.success,
+        responseCount: response?.count,
+        responseTotal: response?.total,
+        responseDataLength: response?.data?.length,
+        filtersApplied: filters
+      });
+      
       container.innerHTML = `
         <div class="no-bookings" style="text-align: center; padding: 60px 20px; color: #bdbdbd;">
           <div style="font-size: 64px; margin-bottom: 16px;">📋</div>
           <h3 style="margin-bottom: 8px; color: #757575;">No bookings available</h3>
-          <p>Check back later for new booking opportunities</p>
+          <p style="margin-bottom: 8px;">Check back later for new booking opportunities</p>
+          <p style="font-size: 12px; color: #757575; margin-bottom: 16px;">
+            ${response?.total === 0 ? "No active bookings found in database" : "No bookings match the current filters"}
+          </p>
           <button onclick="loadBookingsFromAPI()" style="padding: 12px 24px; background: #ff9900; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 16px;">
             🔄 Refresh
           </button>
@@ -800,7 +866,17 @@ async function loadBookingsFromAPI() {
       
       if (cardsHTML) {
         container.innerHTML = cardsHTML;
-        console.log("✅ Successfully rendered booking cards");
+        console.log("✅ Successfully rendered", bookings.length, "booking cards");
+        console.log("✅ Container ID:", container.id);
+        console.log("✅ Cards HTML length:", cardsHTML.length, "characters");
+        
+        // Verify cards are actually in DOM
+        const renderedCards = container.querySelectorAll(".booking-card");
+        console.log("✅ Rendered cards count in DOM:", renderedCards.length);
+        
+        if (renderedCards.length !== bookings.length) {
+          console.warn("⚠️ Mismatch: Expected", bookings.length, "cards but found", renderedCards.length, "in DOM");
+        }
       } else {
         throw new Error("No valid booking cards generated");
       }
@@ -823,6 +899,16 @@ async function loadBookingsFromAPI() {
     if (typeof updateResultsCount === "function") {
       updateResultsCount(bookings.length);
     }
+
+    // Final summary log
+    console.log("=".repeat(80));
+    console.log("✅ BOOKINGS DISPLAY SUMMARY:");
+    console.log("=".repeat(80));
+    console.log(`📊 Total Bookings Fetched: ${bookings.length}`);
+    console.log(`📊 Total Bookings Rendered: ${container.querySelectorAll(".booking-card").length}`);
+    console.log(`📊 Container: ${container.id}`);
+    console.log(`📊 All bookings are now visible on dashboard with same style`);
+    console.log("=".repeat(80));
 
     // Re-initialize filter handlers if needed
     if (typeof initFilterSection === "function") {
@@ -1328,12 +1414,6 @@ function createBookingAvailableContent() {
       <div class="banner-dots" id="bannerDots"></div>
     </div>
 
-    <!-- View Switcher -->
-    <div class="view-switcher">
-      <button class="view-btn active" data-view="bookings" onclick="switchView('bookings')">
-        📋 Bookings
-      </button>
-    </div>
 
     <!-- Filter Section -->
     <div class="filter-section-bar" id="filterSectionBar">

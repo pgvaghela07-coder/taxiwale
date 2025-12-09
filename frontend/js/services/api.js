@@ -9,8 +9,8 @@ function getApiBaseUrl() {
     return storedUrl;
   }
 
-  // Production Backend URL (Render) - Default for all environments
-  const PRODUCTION_API_URL = "https://taxiwale.onrender.com/api";
+  // Production Backend URL - Default for all environments
+  const PRODUCTION_API_URL = "https://taxiwalepartners.com/api";
 
   // Auto-detect environment
   const currentHost = window.location.hostname;

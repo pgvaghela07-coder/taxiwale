@@ -1,335 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tripeaz Taxi Partners | Dashboard</title>
-    <link rel="stylesheet" href="../css/pages/dashboard.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <!-- Combined Warning Sticky Banner -->
-    <div class="combinedStickyBanner" id="combinedStickyBanner">
-      <div class="banner-content">
-        <span class="banner-icon">⚠️</span>
-        <div class="banner-text-wrapper">
-          <span class="banner-text" id="combinedBannerText">
-            Complete your profile and verification to access all features
-          </span>
-          <div class="banner-status-items" id="bannerStatusItems">
-            <!-- Status items will be dynamically added here -->
-          </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tripeaz Taxi Partners | Dashboard</title>
+  <link rel="stylesheet" href="../css/pages/dashboard.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Combined Warning Sticky Banner -->
+  <div class="combinedStickyBanner" id="combinedStickyBanner">
+    <div class="banner-content">
+      <span class="banner-icon">⚠️</span>
+      <div class="banner-text-wrapper">
+        <span class="banner-text" id="combinedBannerText">
+          Complete your profile and verification to access all features
+        </span>
+        <div class="banner-status-items" id="bannerStatusItems">
+          <!-- Status items will be dynamically added here -->
         </div>
-        <button
-          class="banner-action-btn"
-          id="bannerActionBtn"
-          onclick="handleBannerClick()"
-        >
-          Complete Now
+      </div>
+      <button class="banner-action-btn" id="bannerActionBtn" onclick="handleBannerClick()">
+        Complete Now
+      </button>
+      <button class="banner-close" onclick="hideCombinedWarning()">
+        &times;
+      </button>
+    </div>
+  </div>
+
+  <!-- Combined Warning Popup -->
+  <div class="combinedWarningPopup" id="combinedWarningPopup">
+    <div class="warning-popup-content">
+      <div class="warning-popup-header">
+        <div class="warning-popup-icon">⚠️</div>
+        <h3 class="warning-popup-title">Action Required</h3>
+        <p class="warning-popup-subtitle" id="warningSubtitle">
+          Complete your profile and verification to unlock all features
+        </p>
+      </div>
+      <div class="warning-popup-body">
+        <div class="status-details" id="statusDetails">
+          <!-- Status items will be dynamically added here -->
+        </div>
+        <div class="restrictions-section">
+          <h4 class="restrictions-title">Current Restrictions:</h4>
+          <ul class="restrictions-list" id="restrictionsList">
+            <li>❌ Take bookings</li>
+            <li>❌ Post bookings</li>
+            <li>❌ Use features</li>
+            <li>❌ Contact partners</li>
+            <li>❌ View full booking/vehicle details</li>
+          </ul>
+        </div>
+      </div>
+      <div class="warning-popup-actions">
+        <button class="warning-btn warning-btn-primary" id="primaryActionBtn" onclick="handlePrimaryAction()">
+          Complete Profile Now
         </button>
-        <button class="banner-close" onclick="hideCombinedWarning()">
+        <button class="warning-btn warning-btn-secondary" onclick="skipForNow()">
+          Skip For Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="header-logo">
+        <h2 class="logo-text">Tripeaz Taxi</h2>
+        <span class="logo-badge">Partners</span>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="header-actions">
+        <!-- Support Button -->
+        <button class="support-button" onclick="handleSupportClick()" aria-label="Support">
+          <svg class="support-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 1C7.03 1 3 5.03 3 10V16C3 17.1 3.9 18 5 18H7V12H5V10C5 6.13 8.13 3 12 3C15.87 3 19 6.13 19 10V12H17V18H19C20.1 18 21 17.1 21 16V10C21 5.03 16.97 1 12 1Z" />
+            <path d="M9 21H15V23H9V21Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+    <!-- Placeholder content - will be replaced based on active tab -->
+    <div class="content-placeholder">
+      <div class="placeholder-content">
+        <div class="placeholder-icon">🚖</div>
+        <h2>Welcome to Tripeaz Taxi Partners</h2>
+        <p>Select a tab from the navigation below to get started</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer class="footer-nav">
+    <nav class="nav-tabs">
+      <!-- Tab 1: Booking Available -->
+      <button class="nav-tab active" data-tab="available" onclick="switchTab('available')">
+        <div class="tab-icon">🚖</div>
+        <span class="tab-label">Available</span>
+      </button>
+
+      <!-- Tab 2: My Features -->
+      <button class="nav-tab" data-tab="features" onclick="switchTab('features')">
+        <div class="tab-icon">⭐</div>
+        <span class="tab-label">Features</span>
+      </button>
+
+      <!-- Tab 3: Floating Action Button (FAB) -->
+      <button class="nav-tab fab-button" onclick="toggleFABPopup()" id="fabButton" aria-label="Add New Item"
+        aria-expanded="false">
+        <div class="fab-icon nav-fab-icon">+</div>
+      </button>
+
+      <!-- Tab 4: My Bookings -->
+      <button class="nav-tab" data-tab="bookings" onclick="switchTab('bookings')">
+        <div class="tab-icon">📋</div>
+        <span class="tab-label">Bookings</span>
+      </button>
+
+      <!-- Tab 5: Profile -->
+      <button class="nav-tab" data-tab="profile" onclick="switchTab('profile')">
+        <div class="tab-icon">👤</div>
+        <span class="tab-label">Profile</span>
+      </button>
+    </nav>
+  </footer>
+
+  <!-- Support Modal -->
+  <div class="support-modal" id="supportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Support & Help</h3>
+        <button class="close-modal" onclick="closeSupportModal()">
           &times;
         </button>
       </div>
-    </div>
-
-    <!-- Combined Warning Popup -->
-    <div class="combinedWarningPopup" id="combinedWarningPopup">
-      <div class="warning-popup-content">
-        <div class="warning-popup-header">
-          <div class="warning-popup-icon">⚠️</div>
-          <h3 class="warning-popup-title">Action Required</h3>
-          <p class="warning-popup-subtitle" id="warningSubtitle">
-            Complete your profile and verification to unlock all features
-          </p>
-        </div>
-        <div class="warning-popup-body">
-          <div class="status-details" id="statusDetails">
-            <!-- Status items will be dynamically added here -->
-          </div>
-          <div class="restrictions-section">
-            <h4 class="restrictions-title">Current Restrictions:</h4>
-            <ul class="restrictions-list" id="restrictionsList">
-              <li>❌ Take bookings</li>
-              <li>❌ Post bookings</li>
-              <li>❌ Use features</li>
-              <li>❌ Contact partners</li>
-              <li>❌ View full booking/vehicle details</li>
-            </ul>
+      <div class="modal-body">
+        <div class="support-option" onclick="contactSupport()">
+          <span class="support-option-icon">💬</span>
+          <div>
+            <h4>Live Chat</h4>
+            <p>Get instant help from our support team</p>
           </div>
         </div>
-        <div class="warning-popup-actions">
-          <button
-            class="warning-btn warning-btn-primary"
-            id="primaryActionBtn"
-            onclick="handlePrimaryAction()"
-          >
-            Complete Profile Now
-          </button>
-          <button
-            class="warning-btn warning-btn-secondary"
-            onclick="skipForNow()"
-          >
-            Skip For Now
-          </button>
+        <div class="support-option" onclick="whatsappSupport()">
+          <span class="support-option-icon">📱</span>
+          <div>
+            <h4>WhatsApp</h4>
+            <p>Chat with us on WhatsApp</p>
+          </div>
+        </div>
+        <div class="support-option" onclick="callSupport()">
+          <span class="support-option-icon">📞</span>
+          <div>
+            <h4>Call Us</h4>
+            <p>+91-9103774717</p>
+          </div>
+        </div>
+        <div class="support-option" onclick="emailSupport()">
+          <span class="support-option-icon">✉️</span>
+          <div>
+            <h4>Email</h4>
+            <p>support@tripeaztaxi.com</p>
+          </div>
         </div>
       </div>
     </div>
+  </div>
 
+  <!-- FAB Popup Menu -->
+  <div class="fab-popup-overlay" id="fabPopupOverlay" onclick="closeFABPopup()">
+    <div class="fab-popup-menu" onclick="event.stopPropagation()">
+      <div class="fab-popup-option" onclick="handleUploadBooking()">
+        <span class="fab-option-icon">📄</span>
+        <span class="fab-option-label">Upload New Booking</span>
+      </div>
+      <div class="fab-popup-option cancel" onclick="closeFABPopup()">
+        <span class="fab-option-icon">✕</span>
+        <span class="fab-option-label">Cancel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot Overlay -->
+  <div class="chatbot-overlay" id="chatbotOverlay" onclick="toggleChatbot()"></div>
+
+  <!-- Customer Support Chatbot -->
+  <div class="chatbot-window" id="chatbotWindow">
     <!-- Header -->
-    <header class="main-header">
-      <div class="header-content">
-        <!-- Logo -->
-        <div class="header-logo">
-          <h2 class="logo-text">Tripeaz Taxi</h2>
-          <span class="logo-badge">Partners</span>
-        </div>
+    <div class="chatbot-header">
+      <div class="chatbot-header-content">
+        <span class="chatbot-header-icon">💬</span>
+        <h3>Customer Support</h3>
+      </div>
+      <button class="close-chatbot-btn" onclick="toggleChatbot()" aria-label="Close chat">
+        ❌
+      </button>
+    </div>
 
-        <!-- Header Action Buttons -->
-        <div class="header-actions">
-          <!-- Support Button -->
-          <button
-            class="support-button"
-            onclick="handleSupportClick()"
-            aria-label="Support"
-          >
-            <svg
-              class="support-icon"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 1C7.03 1 3 5.03 3 10V16C3 17.1 3.9 18 5 18H7V12H5V10C5 6.13 8.13 3 12 3C15.87 3 19 6.13 19 10V12H17V18H19C20.1 18 21 17.1 21 16V10C21 5.03 16.97 1 12 1Z"
-              />
-              <path d="M9 21H15V23H9V21Z" />
-            </svg>
+    <!-- Chat Body (Scrollable) -->
+    <div class="chatbot-messages" id="chatbotMessages">
+      <!-- Welcome message will be shown if no messages -->
+      <div class="chatbot-welcome" id="chatbotWelcome">
+        <div class="welcome-icon">🚖</div>
+        <h3>Welcome to Tripeaz Taxi Partners Support</h3>
+        <p>How can we help you today?</p>
+        <div class="quick-replies">
+          <button class="quick-reply-chip" onclick="sendQuickReply('Booking Help')">
+            Booking Help
+          </button>
+          <button class="quick-reply-chip" onclick="sendQuickReply('App Issue')">
+            App Issue
+          </button>
+          <button class="quick-reply-chip" onclick="sendQuickReply('Contact Support')">
+            Contact Support
           </button>
         </div>
       </div>
-      <div class="header-border"></div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="main-content" id="mainContent">
-      <!-- Placeholder content - will be replaced based on active tab -->
-      <div class="content-placeholder">
-        <div class="placeholder-content">
-          <div class="placeholder-icon">🚖</div>
-          <h2>Welcome to Tripeaz Taxi Partners</h2>
-          <p>Select a tab from the navigation below to get started</p>
-        </div>
-      </div>
-    </main>
-
-    <!-- Footer Navigation -->
-    <footer class="footer-nav">
-      <nav class="nav-tabs">
-        <!-- Tab 1: Booking Available -->
-        <button
-          class="nav-tab active"
-          data-tab="available"
-          onclick="switchTab('available')"
-        >
-          <div class="tab-icon">🚖</div>
-          <span class="tab-label">Available</span>
-        </button>
-
-        <!-- Tab 2: My Features -->
-        <button
-          class="nav-tab"
-          data-tab="features"
-          onclick="switchTab('features')"
-        >
-          <div class="tab-icon">⭐</div>
-          <span class="tab-label">Features</span>
-        </button>
-
-        <!-- Tab 3: Floating Action Button (FAB) -->
-        <button
-          class="nav-tab fab-button"
-          onclick="toggleFABPopup()"
-          id="fabButton"
-          aria-label="Add New Item"
-          aria-expanded="false"
-        >
-          <div class="fab-icon nav-fab-icon">+</div>
-        </button>
-
-        <!-- Tab 4: My Bookings -->
-        <button
-          class="nav-tab"
-          data-tab="bookings"
-          onclick="switchTab('bookings')"
-        >
-          <div class="tab-icon">📋</div>
-          <span class="tab-label">Bookings</span>
-        </button>
-
-        <!-- Tab 5: Profile -->
-        <button
-          class="nav-tab"
-          data-tab="profile"
-          onclick="switchTab('profile')"
-        >
-          <div class="tab-icon">👤</div>
-          <span class="tab-label">Profile</span>
-        </button>
-      </nav>
-    </footer>
-
-    <!-- Support Modal -->
-    <div class="support-modal" id="supportModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Support & Help</h3>
-          <button class="close-modal" onclick="closeSupportModal()">
-            &times;
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="support-option" onclick="contactSupport()">
-            <span class="support-option-icon">💬</span>
-            <div>
-              <h4>Live Chat</h4>
-              <p>Get instant help from our support team</p>
-            </div>
-          </div>
-          <div class="support-option" onclick="whatsappSupport()">
-            <span class="support-option-icon">📱</span>
-            <div>
-              <h4>WhatsApp</h4>
-              <p>Chat with us on WhatsApp</p>
-            </div>
-          </div>
-          <div class="support-option" onclick="callSupport()">
-            <span class="support-option-icon">📞</span>
-            <div>
-              <h4>Call Us</h4>
-              <p>+91-9103774717</p>
-            </div>
-          </div>
-          <div class="support-option" onclick="emailSupport()">
-            <span class="support-option-icon">✉️</span>
-            <div>
-              <h4>Email</h4>
-              <p>support@tripeaztaxi.com</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- FAB Popup Menu -->
-    <div
-      class="fab-popup-overlay"
-      id="fabPopupOverlay"
-      onclick="closeFABPopup()"
-    >
-      <div class="fab-popup-menu" onclick="event.stopPropagation()">
-        <div class="fab-popup-option" onclick="handleUploadBooking()">
-          <span class="fab-option-icon">📄</span>
-          <span class="fab-option-label">Upload New Booking</span>
-        </div>
-        <div class="fab-popup-option" onclick="handleUploadVehicle()">
-          <span class="fab-option-icon">🚗</span>
-          <span class="fab-option-label">Upload Free Vehicle</span>
-        </div>
-        <div class="fab-popup-option cancel" onclick="closeFABPopup()">
-          <span class="fab-option-icon">✕</span>
-          <span class="fab-option-label">Cancel</span>
-        </div>
-      </div>
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <span class="typing-text">Agent typing...</span>
     </div>
 
-    <!-- Chatbot Overlay -->
-    <div
-      class="chatbot-overlay"
-      id="chatbotOverlay"
-      onclick="toggleChatbot()"
-    ></div>
-
-    <!-- Customer Support Chatbot -->
-    <div class="chatbot-window" id="chatbotWindow">
-      <!-- Header -->
-      <div class="chatbot-header">
-        <div class="chatbot-header-content">
-          <span class="chatbot-header-icon">💬</span>
-          <h3>Customer Support</h3>
-        </div>
-        <button
-          class="close-chatbot-btn"
-          onclick="toggleChatbot()"
-          aria-label="Close chat"
-        >
-          ❌
-        </button>
-      </div>
-
-      <!-- Chat Body (Scrollable) -->
-      <div class="chatbot-messages" id="chatbotMessages">
-        <!-- Welcome message will be shown if no messages -->
-        <div class="chatbot-welcome" id="chatbotWelcome">
-          <div class="welcome-icon">🚖</div>
-          <h3>Welcome to Tripeaz Taxi Partners Support</h3>
-          <p>How can we help you today?</p>
-          <div class="quick-replies">
-            <button
-              class="quick-reply-chip"
-              onclick="sendQuickReply('Booking Help')"
-            >
-              Booking Help
-            </button>
-            <button
-              class="quick-reply-chip"
-              onclick="sendQuickReply('App Issue')"
-            >
-              App Issue
-            </button>
-            <button
-              class="quick-reply-chip"
-              onclick="sendQuickReply('Contact Support')"
-            >
-              Contact Support
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Typing Indicator -->
-      <div class="typing-indicator" id="typingIndicator">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <span class="typing-text">Agent typing...</span>
-      </div>
-
-      <!-- Input Section (Fixed Bottom) -->
-      <div class="chatbot-input-container">
-        <input
-          type="text"
-          class="chatbot-input"
-          id="chatbotInput"
-          placeholder="Type your message…"
-          onkeypress="handleChatInput(event)"
-          autocomplete="off"
-        />
-        <button
-          class="chatbot-send-btn"
-          onclick="sendChatMessage()"
-          aria-label="Send message"
-        >
-          <span class="send-icon">➤</span>
-        </button>
-      </div>
+    <!-- Input Section (Fixed Bottom) -->
+    <div class="chatbot-input-container">
+      <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Type your message…"
+        onkeypress="handleChatInput(event)" autocomplete="off" />
+      <button class="chatbot-send-btn" onclick="sendChatMessage()" aria-label="Send message">
+        <span class="send-icon">➤</span>
+      </button>
     </div>
+  </div>
 
-    <script src="../js/services/api.js"></script>
-    <script src="../js/pages/dashboard.js"></script>
-  </body>
+  <script src="../js/services/api.js"></script>
+  <script src="../js/pages/dashboard.js"></script>
+</body>
+
 </html>
