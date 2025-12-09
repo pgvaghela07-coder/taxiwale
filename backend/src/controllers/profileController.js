@@ -240,9 +240,12 @@ exports.getPublicProfile = async (req, res) => {
     const { userId } = req.params;
     const mongoose = require("mongoose");
 
+    console.log("🔍 [getPublicProfile] ========== START ==========");
     console.log("🔍 [getPublicProfile] Request received for userId:", userId);
-    console.log("🔍 [getPublicProfile] Request params:", req.params);
+    console.log("🔍 [getPublicProfile] Request params:", JSON.stringify(req.params));
     console.log("🔍 [getPublicProfile] Request URL:", req.originalUrl);
+    console.log("🔍 [getPublicProfile] Request path:", req.path);
+    console.log("🔍 [getPublicProfile] Request method:", req.method);
 
     if (!userId) {
       return res.status(400).json({
@@ -360,8 +363,11 @@ exports.getPublicProfile = async (req, res) => {
         },
       },
     });
+    console.log("✅ [getPublicProfile] ========== SUCCESS ==========");
   } catch (error) {
-    console.error("Get Public Profile Error:", error);
+    console.error("❌ [getPublicProfile] ========== ERROR ==========");
+    console.error("❌ [getPublicProfile] Error:", error);
+    console.error("❌ [getPublicProfile] Stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to fetch profile",

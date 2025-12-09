@@ -12,8 +12,25 @@ const {
 } = require("../controllers/profileController");
 const auth = require("../middleware/auth");
 
+// Debug middleware - log all requests to profile routes
+router.use((req, res, next) => {
+  console.log("🔍 [PROFILE ROUTER] Request:", req.method, req.path);
+  console.log("🔍 [PROFILE ROUTER] Original URL:", req.originalUrl);
+  next();
+});
+
 // Public profile routes (MUST be before other routes to avoid route conflicts)
-router.get("/public/:userId", getPublicProfile);
+// Test route to verify routing works
+router.get("/public/test", (req, res) => {
+  console.log("✅ [TEST ROUTE] /public/test hit!");
+  res.json({ success: true, message: "Public profile route is working" });
+});
+
+router.get("/public/:userId", (req, res, next) => {
+  console.log("✅ [ROUTE MATCH] /public/:userId matched!");
+  console.log("✅ [ROUTE MATCH] userId:", req.params.userId);
+  next();
+}, getPublicProfile);
 
 // Protected routes
 router.get("/", auth, getProfile);

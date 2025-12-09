@@ -328,7 +328,21 @@ class ApiService {
     }
     // Encode userId to handle special characters
     const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/profile/public/${encodedUserId}`);
+    
+    // Try profile/public endpoint first
+    try {
+      return await this.request(`/profile/public/${encodedUserId}`);
+    } catch (error) {
+      // Fallback to users/public endpoint if profile/public fails (for backward compatibility)
+      console.log("Profile/public endpoint failed, trying users/public fallback...");
+      try {
+        return await this.request(`/users/public/${encodedUserId}`);
+      } catch (fallbackError) {
+        // If both fail, throw original error
+        console.error("Both endpoints failed:", error, fallbackError);
+        throw error;
+      }
+    }
   }
 
   async getUserReviews(userId, page = 1, limit = 10) {
