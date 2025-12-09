@@ -1326,7 +1326,7 @@ html {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 10px 5px;
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -2128,7 +2128,7 @@ body.has-banner .filter-section-bar {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 20px rgba(255, 179, 0, 0.4);
-  z-index: 1085; /* Above filter bar and footer nav but below chatbot window */
+  z-index: 2500; /* Above filter bar and footer nav but below chatbot window */
   transition: all 0.3s ease, opacity 0.2s ease;
   border: 3px solid #ffffff;
 }

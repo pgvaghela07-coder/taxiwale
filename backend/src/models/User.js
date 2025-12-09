@@ -153,6 +153,12 @@ const userSchema = new mongoose.Schema(
       yearsInBusiness: Number,
       serviceAreas: [String], // Cities/areas where they operate
       isProfileComplete: { type: Boolean, default: false },
+      // Additional profile fields for public profile
+      businessDescription: String,
+      age: Number, // Can be calculated from dob
+      preferredTrips: [String], // e.g., ["Round Trip", "Airport", "One Way", "Local Duty"]
+      preferredRoutes: [String], // e.g., ["Ludhiana -> Amritsar", "Ludhiana -> Delhi"]
+      languages: [String], // e.g., ["Hindi", "English", "Punjabi", "Gujarati"]
     },
     wallet: {
       balance: { type: Number, default: 0 },

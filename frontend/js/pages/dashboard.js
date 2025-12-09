@@ -1040,6 +1040,30 @@ function createBookingCard(booking) {
   const bookingId =
     booking.bookingId || booking._id?.toString().slice(-6) || "N/A";
 
+  // Get user ID for profile - handle both populated and non-populated cases
+  let userIdForProfile = "";
+  if (booking.postedBy) {
+    if (typeof booking.postedBy === "object") {
+      // If populated object, use _id
+      userIdForProfile = booking.postedBy._id ? booking.postedBy._id.toString() : "";
+    } else if (typeof booking.postedBy === "string") {
+      // If it's already a string (ObjectId string)
+      userIdForProfile = booking.postedBy;
+    } else {
+      // Try to convert to string
+      try {
+        userIdForProfile = String(booking.postedBy);
+      } catch (e) {
+        console.error("Error converting postedBy to string:", e);
+      }
+    }
+  }
+  
+  // Log for debugging
+  if (!userIdForProfile) {
+    console.warn("No userId found for booking:", booking._id, "postedBy:", booking.postedBy);
+  }
+
   // Check if card should be restricted
   const profileSkipped = sessionStorage.getItem("profileSkipped") === "true";
   const verificationSkipped =
@@ -1054,7 +1078,7 @@ function createBookingCard(booking) {
          data-booking-id="${booking._id || ""}">
       <div class="card-header">
         <div class="user-info">
-          <div class="user-avatar">
+          <div class="user-avatar" ${userIdForProfile ? `onclick="openUserProfile('${userIdForProfile}')" style="cursor: pointer;"` : ''}>
             <img src="${avatarUrl}" alt="${userName}">
           </div>
           <div class="user-details">
@@ -1142,6 +1166,18 @@ function createBookingCard(booking) {
     </div>
   `;
 }
+
+// ===== OPEN USER PROFILE =====
+function openUserProfile(userId) {
+  if (!userId) {
+    console.error("User ID not available");
+    return;
+  }
+  window.location.href = `user-profile.html?userId=${userId}`;
+}
+
+// Make globally accessible
+window.openUserProfile = openUserProfile;
 
 // ===== CREATE VEHICLE CARD FROM API DATA =====
 function createVehicleCard(vehicle) {
@@ -1446,37 +1482,37 @@ function createBookingAvailableContent() {
                 <input type="text" class="search-input" placeholder="Search..." onkeyup="filterVehicleOptions(event)" onclick="event.stopPropagation()">
               </div>
               <div class="dropdown-options">
-                <div class="dropdown-option" data-value="all" onclick="selectVehicleOption('all')">
+                <div class="dropdown-option" data-value="all" onclick="event.stopPropagation(); selectVehicleOption('all')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚗</span>
                   <span class="option-text">All Vehicle</span>
                 </div>
-                <div class="dropdown-option" data-value="sedan" onclick="selectVehicleOption('sedan')">
+                <div class="dropdown-option" data-value="sedan" onclick="event.stopPropagation(); selectVehicleOption('sedan')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚘</span>
                   <span class="option-text">Sedan</span>
                 </div>
-                <div class="dropdown-option" data-value="suv" onclick="selectVehicleOption('suv')">
+                <div class="dropdown-option" data-value="suv" onclick="event.stopPropagation(); selectVehicleOption('suv')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚙</span>
                   <span class="option-text">SUV</span>
                 </div>
-                <div class="dropdown-option" data-value="hatchback" onclick="selectVehicleOption('hatchback')">
+                <div class="dropdown-option" data-value="hatchback" onclick="event.stopPropagation(); selectVehicleOption('hatchback')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚗</span>
                   <span class="option-text">Hatchback</span>
                 </div>
-                <div class="dropdown-option" data-value="luxury" onclick="selectVehicleOption('luxury')">
+                <div class="dropdown-option" data-value="luxury" onclick="event.stopPropagation(); selectVehicleOption('luxury')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚖</span>
                   <span class="option-text">Luxury</span>
                 </div>
-                <div class="dropdown-option" data-value="traveller" onclick="selectVehicleOption('traveller')">
+                <div class="dropdown-option" data-value="traveller" onclick="event.stopPropagation(); selectVehicleOption('traveller')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚐</span>
                   <span class="option-text">Traveller</span>
                 </div>
-                <div class="dropdown-option" data-value="bus" onclick="selectVehicleOption('bus')">
+                <div class="dropdown-option" data-value="bus" onclick="event.stopPropagation(); selectVehicleOption('bus')">
                   <span class="checkbox-custom"></span>
                   <span class="option-icon">🚌</span>
                   <span class="option-text">Bus</span>
@@ -3014,64 +3050,102 @@ function initFilterSection() {
 
   // Add touch event listeners for mobile (like calendar/time picker)
   // Close dropdown on any touch outside dropdown menu
+  // Use touchend instead of touchstart to allow clicks to register first
+  let touchStartTime = 0;
+  let touchStartTarget = null;
+  
   document.addEventListener(
     "touchstart",
     (e) => {
+      touchStartTime = Date.now();
+      touchStartTarget = e.target;
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchend",
+    (e) => {
       const activeDropdown = document.querySelector(".custom-dropdown.active");
-      if (activeDropdown) {
-        const menu = activeDropdown.querySelector(".dropdown-menu");
-        const touchTarget = e.target;
+      if (!activeDropdown) return;
 
-        // Check if touch is inside dropdown menu or trigger
-        let isInsideDropdown = false;
+      const touchTarget = e.target;
+      const menu = activeDropdown.querySelector(".dropdown-menu");
+      
+      // Check if touch is inside dropdown menu or trigger
+      let isInsideDropdown = false;
 
-        // Check if touch is on trigger (to toggle dropdown)
-        const trigger = activeDropdown.querySelector(".dropdown-trigger");
-        if (
-          trigger &&
-          (trigger.contains(touchTarget) || trigger === touchTarget)
-        ) {
-          // Don't close if clicking on trigger - let toggle function handle it
-          return;
-        }
+      // Check if touch is on trigger (to toggle dropdown)
+      const trigger = activeDropdown.querySelector(".dropdown-trigger");
+      if (
+        trigger &&
+        (trigger.contains(touchTarget) || trigger === touchTarget || trigger.contains(touchStartTarget))
+      ) {
+        // Don't close if clicking on trigger - let toggle function handle it
+        return;
+      }
 
-        // Check if touch is inside dropdown menu
-        if (menu) {
-          // Check if menu is in document.body (moved menu)
-          if (menu.parentElement === document.body) {
-            const menuRect = menu.getBoundingClientRect();
-            const touchX = e.touches[0].clientX;
-            const touchY = e.touches[0].clientY;
-            isInsideDropdown =
-              touchX >= menuRect.left &&
-              touchX <= menuRect.right &&
-              touchY >= menuRect.top &&
-              touchY <= menuRect.bottom;
-          } else {
-            // Menu is still in dropdown element
-            if (menu.contains(touchTarget)) {
-              isInsideDropdown = true;
-            }
-          }
-        }
-
-        // Check if touch is inside dropdown options or search
-        if (!isInsideDropdown && activeDropdown.contains(touchTarget)) {
-          const menuOptions = activeDropdown.querySelector(".dropdown-options");
-          const menuSearch = activeDropdown.querySelector(".dropdown-search");
-          if (
-            (menuOptions && menuOptions.contains(touchTarget)) ||
-            (menuSearch && menuSearch.contains(touchTarget))
-          ) {
+      // Check if touch is inside dropdown menu
+      if (menu) {
+        // Check if menu is in document.body (moved menu)
+        if (menu.parentElement === document.body) {
+          const menuRect = menu.getBoundingClientRect();
+          const touchX = e.changedTouches[0].clientX;
+          const touchY = e.changedTouches[0].clientY;
+          isInsideDropdown =
+            touchX >= menuRect.left &&
+            touchX <= menuRect.right &&
+            touchY >= menuRect.top &&
+            touchY <= menuRect.bottom;
+        } else {
+          // Menu is still in dropdown element
+          if (menu.contains(touchTarget) || menu.contains(touchStartTarget)) {
             isInsideDropdown = true;
           }
         }
+      }
 
-        // Close dropdown if touch is outside
-        if (!isInsideDropdown) {
-          closeAllDropdowns();
+      // Check if touch is inside dropdown options, search, or any child element
+      if (!isInsideDropdown) {
+        const menuOptions = activeDropdown.querySelector(".dropdown-options");
+        const menuSearch = activeDropdown.querySelector(".dropdown-search");
+        const allMenuElements = menu ? menu.querySelectorAll("*") : [];
+        
+        // Check if touch target is any child of menu
+        let isMenuChild = false;
+        if (menu) {
+          allMenuElements.forEach((el) => {
+            if (el === touchTarget || el === touchStartTarget || el.contains(touchTarget) || el.contains(touchStartTarget)) {
+              isMenuChild = true;
+            }
+          });
+          if (menu === touchTarget || menu === touchStartTarget || menu.contains(touchTarget) || menu.contains(touchStartTarget)) {
+            isMenuChild = true;
+          }
+        }
+        
+        if (
+          isMenuChild ||
+          (menuOptions && (menuOptions.contains(touchTarget) || menuOptions.contains(touchStartTarget))) ||
+          (menuSearch && (menuSearch.contains(touchTarget) || menuSearch.contains(touchStartTarget)))
+        ) {
+          isInsideDropdown = true;
         }
       }
+
+      // Only close if touch is clearly outside and not a quick tap (allow click to register)
+      const touchDuration = Date.now() - touchStartTime;
+      if (!isInsideDropdown && touchDuration > 100) {
+        // Delay close to allow click events to fire first
+        setTimeout(() => {
+          const stillActive = document.querySelector(".custom-dropdown.active");
+          if (stillActive === activeDropdown) {
+            closeAllDropdowns();
+          }
+        }, 150);
+      }
+      
+      touchStartTarget = null;
     },
     { passive: true }
   );
@@ -3091,7 +3165,14 @@ function populateCityFilterOptions(type) {
   const allCityOption = document.createElement("div");
   allCityOption.className = "dropdown-option";
   allCityOption.dataset.value = "all";
-  allCityOption.onclick = () => selectCityOption(type, "all");
+  // Use both onclick and touch events for better mobile support
+  allCityOption.onclick = (e) => {
+    e.stopPropagation();
+    selectCityOption(type, "all");
+  };
+  allCityOption.ontouchstart = (e) => {
+    e.stopPropagation();
+  };
   allCityOption.innerHTML = `
     <span class="checkbox-custom"></span>
     <span class="option-icon">📍</span>
@@ -3113,7 +3194,14 @@ function populateCityFilterOptions(type) {
     option.className = "dropdown-option";
     option.dataset.value = city.toLowerCase();
     option.dataset.cityName = city;
-    option.onclick = () => selectCityOption(type, city.toLowerCase());
+    // Use both onclick and touch events for better mobile support
+    option.onclick = (e) => {
+      e.stopPropagation();
+      selectCityOption(type, city.toLowerCase());
+    };
+    option.ontouchstart = (e) => {
+      e.stopPropagation();
+    };
     option.innerHTML = `
       <span class="checkbox-custom"></span>
       <span class="option-icon">📍</span>

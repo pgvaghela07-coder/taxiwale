@@ -321,6 +321,29 @@ class ApiService {
     return this.request("/profile/qr");
   }
 
+  // Public profile methods
+  async getPublicProfile(userId) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+    // Encode userId to handle special characters
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(`/profile/public/${encodedUserId}`);
+  }
+
+  async getUserReviews(userId, page = 1, limit = 10) {
+    return this.request(
+      `/profile/${userId}/reviews?page=${page}&limit=${limit}`
+    );
+  }
+
+  async createReview(userId, reviewData) {
+    return this.request(`/profile/${userId}/review`, {
+      method: "POST",
+      body: JSON.stringify(reviewData),
+    });
+  }
+
   // User search for assignment
   async searchUsers(query) {
     return this.request(`/users/search?q=${encodeURIComponent(query)}`);

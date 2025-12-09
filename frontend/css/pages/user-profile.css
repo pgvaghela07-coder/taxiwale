@@ -1,0 +1,454 @@
+/* User Profile Page Styles */
+
+.user-profile-main {
+  padding: 20px 16px 100px;
+  max-width: 600px;
+  margin: 0 auto;
+  background: #0a0a0a;
+  min-height: calc(100vh - 60px);
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #333;
+  border-top-color: #ff9900;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-container h3 {
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.error-container p {
+  color: #999;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  background: #ff9900;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Profile Header Section */
+.profile-header-section {
+  text-align: center;
+  padding: 20px 0 30px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 20px;
+}
+
+.profile-avatar-large {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.profile-avatar-large img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ff9900;
+}
+
+.verified-badge-large {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #22c55e;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid #0a0a0a;
+}
+
+.verify-icon {
+  font-size: 14px;
+}
+
+.profile-name-large {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.profile-location {
+  color: #999;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Action Buttons Row */
+.action-buttons-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.call-btn {
+  background: #ff9900;
+  color: #1a1a1a;
+}
+
+.whatsapp-btn {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.share-btn {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-icon {
+  font-size: 24px;
+}
+
+/* Profile Details Card */
+.profile-details-card {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detail-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.detail-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  color: #999;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* About Section */
+.about-section {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.about-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #0a0a0a;
+  border-radius: 8px;
+}
+
+.about-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.about-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-label {
+  color: #999;
+  font-size: 12px;
+}
+
+.about-value {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Preferred Trips & Routes Section */
+.preferred-section,
+.languages-section {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.show-details-link {
+  color: #ff9900;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.show-details-link:active {
+  opacity: 0.7;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  background: #0a0a0a;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  border: 1px solid #333;
+}
+
+/* Languages Section */
+.languages-content {
+  min-height: 40px;
+}
+
+.languages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.language-tag {
+  background: #0a0a0a;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  border: 1px solid #333;
+}
+
+/* Vehicles Section */
+.vehicles-section {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.vehicles-container {
+  min-height: 60px;
+}
+
+/* Reviews Summary Section */
+.reviews-summary-section {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.rating-display-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rating-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #ff9900;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-stars .star {
+  font-size: 24px;
+  opacity: 0.3;
+}
+
+.rating-stars .star.filled {
+  opacity: 1;
+}
+
+.reviews-count {
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.view-reviews-btn {
+  background: #ff9900;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.view-reviews-btn:active {
+  opacity: 0.8;
+}
+
+/* No Data Text */
+.no-data-text {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+/* Back Button */
+.back-button {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.back-button:active {
+  opacity: 0.7;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .user-profile-main {
+    padding: 30px 24px 100px;
+  }
+
+  .profile-avatar-large img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .action-buttons-row {
+    gap: 16px;
+  }
+
+  .about-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
