@@ -256,15 +256,39 @@ exports.getPublicProfile = async (req, res) => {
   }
   // #endregion
   try {
-    const { userId } = req.params;
+    // Handle both :userId (from profile route) and :id (from users route)
+    const userId = req.params.userId || req.params.id;
+    
+    // Validate userId is present
+    if (!userId) {
+      // #region agent log
+      try {
+        fs.appendFileSync(logPath, JSON.stringify({
+          id: `log_${Date.now()}_missing_userid`,
+          timestamp: Date.now(),
+          location: 'profileController.js:262',
+          message: 'userId missing from params',
+          data: { params: req.params },
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'E'
+        }) + '\n');
+      } catch (e) {}
+      // #endregion
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+    
     // #region agent log
     try {
       fs.appendFileSync(logPath, JSON.stringify({
         id: `log_${Date.now()}_extracted`,
         timestamp: Date.now(),
-        location: 'profileController.js:241',
+        location: 'profileController.js:275',
         message: 'userId extracted from params',
-        data: { extractedUserId: userId, type: typeof userId, length: userId?.length },
+        data: { extractedUserId: userId, userIdParam: req.params.userId, idParam: req.params.id, type: typeof userId, length: userId?.length },
         sessionId: 'debug-session',
         runId: 'run1',
         hypothesisId: 'E'
