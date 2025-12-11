@@ -236,15 +236,118 @@ exports.generateQR = async (req, res) => {
 // @route   GET /api/profile/public/:userId
 // @access  Public
 exports.getPublicProfile = async (req, res) => {
+  // #region agent log
+  const fs = require('fs');
+  const path = require('path');
+  const logPath = path.join(__dirname, '..', '..', '..', '.cursor', 'debug.log');
+  try {
+    fs.appendFileSync(logPath, JSON.stringify({
+      id: `log_${Date.now()}_entry`,
+      timestamp: Date.now(),
+      location: 'profileController.js:238',
+      message: 'getPublicProfile called',
+      data: { userId: req.params.userId, route: req.route?.path, method: req.method },
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'C'
+    }) + '\n');
+  } catch (e) {
+    console.error('Log write error:', e.message);
+  }
+  // #endregion
   try {
     const { userId } = req.params;
+    // #region agent log
+    try {
+      fs.appendFileSync(logPath, JSON.stringify({
+        id: `log_${Date.now()}_extracted`,
+        timestamp: Date.now(),
+        location: 'profileController.js:241',
+        message: 'userId extracted from params',
+        data: { extractedUserId: userId, type: typeof userId, length: userId?.length },
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'E'
+      }) + '\n');
+    } catch (e) {}
+    // #endregion
 
     // Find user by _id or userId field
+    // #region agent log
+    try {
+      fs.appendFileSync(logPath, JSON.stringify({
+        id: `log_${Date.now()}_before_find`,
+        timestamp: Date.now(),
+        location: 'profileController.js:243',
+        message: 'Before findById query',
+        data: { userId, isValidObjectId: require('mongoose').Types.ObjectId.isValid(userId) },
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'D'
+      }) + '\n');
+    } catch (e) {}
+    // #endregion
     let user = await User.findById(userId);
+    // #region agent log
+    try {
+      fs.appendFileSync(logPath, JSON.stringify({
+        id: `log_${Date.now()}_after_findbyid`,
+        timestamp: Date.now(),
+        location: 'profileController.js:243',
+        message: 'After findById query',
+        data: { found: !!user, userId: user?._id?.toString() || null },
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'A'
+      }) + '\n');
+    } catch (e) {}
+    // #endregion
     if (!user) {
+      // #region agent log
+      try {
+        fs.appendFileSync(logPath, JSON.stringify({
+          id: `log_${Date.now()}_before_findone`,
+          timestamp: Date.now(),
+          location: 'profileController.js:245',
+          message: 'Before findOne by userId field',
+          data: { userId },
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A'
+        }) + '\n');
+      } catch (e) {}
+      // #endregion
       user = await User.findOne({ userId: userId });
+      // #region agent log
+      try {
+        fs.appendFileSync(logPath, JSON.stringify({
+          id: `log_${Date.now()}_after_findone`,
+          timestamp: Date.now(),
+          location: 'profileController.js:245',
+          message: 'After findOne by userId field',
+          data: { found: !!user, userId: user?.userId || null, _id: user?._id?.toString() || null },
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A'
+        }) + '\n');
+      } catch (e) {}
+      // #endregion
     }
     if (!user) {
+      // #region agent log
+      try {
+        fs.appendFileSync(logPath, JSON.stringify({
+          id: `log_${Date.now()}_not_found`,
+          timestamp: Date.now(),
+          location: 'profileController.js:247',
+          message: 'User not found - returning 404',
+          data: { userId, searchedBy_id: true, searchedByUserIdField: true },
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A'
+        }) + '\n');
+      } catch (e) {}
+      // #endregion
       return res.status(404).json({
         success: false,
         message: "User not found",

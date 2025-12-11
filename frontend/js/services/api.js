@@ -97,6 +97,9 @@ class ApiService {
           url: url,
           data: errorData,
         });
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:85',message:'API error response received',data:{status:response.status,statusText:response.statusText,url,errorData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         throw new Error(
           errorData.message ||
             errorData.error ||
@@ -326,16 +329,33 @@ class ApiService {
 
   // Public profile (no auth required)
   async getPublicProfile(userId) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:328',message:'getPublicProfile called',data:{originalUserId:userId,type:typeof userId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     const encodedUserId = encodeURIComponent(userId);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:329',message:'userId encoded',data:{originalUserId:userId,encodedUserId,areEqual:userId===encodedUserId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     try {
       // Try profile public endpoint first
-      return await this.request(`/profile/public/${encodedUserId}`, {
+      const endpoint = `/profile/public/${encodedUserId}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:332',message:'Attempting profile endpoint',data:{endpoint,fullUrl:`${API_BASE_URL}${endpoint}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      return await this.request(endpoint, {
         method: "GET",
       }, false); // false = no auth required
     } catch (error) {
       // Fallback to users public endpoint if profile endpoint fails
       console.warn("Profile endpoint failed, trying users public endpoint:", error);
-      return await this.request(`/users/public/${encodedUserId}`, {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:336',message:'Profile endpoint failed, trying fallback',data:{error:error.message,encodedUserId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      const fallbackEndpoint = `/users/public/${encodedUserId}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:338',message:'Attempting users fallback endpoint',data:{endpoint:fallbackEndpoint,fullUrl:`${API_BASE_URL}${fallbackEndpoint}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      return await this.request(fallbackEndpoint, {
         method: "GET",
       }, false); // false = no auth required
     }

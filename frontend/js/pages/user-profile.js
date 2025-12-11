@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Load user profile data
 async function loadUserProfile() {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-profile.js:20',message:'loadUserProfile called',data:{currentUserId,type:typeof currentUserId,urlParams:window.location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  // #endregion
   try {
     showLoading();
     console.log("Loading profile for userId:", currentUserId);

@@ -77,6 +77,30 @@ io.on("connection", (socket) => {
   });
 });
 
+// --------------- Request Logger (for debugging) ---------------
+app.use((req, res, next) => {
+  // #region agent log
+  const fs = require('fs');
+  const path = require('path');
+  const logPath = path.join(__dirname, '..', '..', '.cursor', 'debug.log');
+  try {
+    fs.appendFileSync(logPath, JSON.stringify({
+      id: `log_${Date.now()}_request`,
+      timestamp: Date.now(),
+      location: 'server.js:80',
+      message: 'Incoming request',
+      data: { method: req.method, path: req.path, originalUrl: req.originalUrl, baseUrl: req.baseUrl },
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'C'
+    }) + '\n');
+  } catch (e) {
+    console.error('Log write error:', e.message);
+  }
+  // #endregion
+  next();
+});
+
 // --------------- Routes ---------------
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));

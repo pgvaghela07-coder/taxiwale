@@ -11,7 +11,26 @@ const {
 const auth = require("../middleware/auth");
 
 // Public routes (no auth required)
-router.get("/public/:userId", getPublicProfile);
+router.get("/public/:userId", (req, res, next) => {
+  // #region agent log
+  const fs = require('fs');
+  const path = require('path');
+  const logPath = path.join(__dirname, '..', '..', '..', '.cursor', 'debug.log');
+  try {
+    fs.appendFileSync(logPath, JSON.stringify({
+      id: `log_${Date.now()}_route_match`,
+      timestamp: Date.now(),
+      location: 'routes/profile.js:14',
+      message: 'Route /public/:userId matched',
+      data: { userId: req.params.userId, method: req.method, path: req.path, originalUrl: req.originalUrl },
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'C'
+    }) + '\n');
+  } catch (e) {}
+  // #endregion
+  next();
+}, getPublicProfile);
 
 // Protected routes (auth required)
 router.get("/", auth, getProfile);
