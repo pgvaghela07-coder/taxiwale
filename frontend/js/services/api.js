@@ -57,23 +57,20 @@ class ApiService {
     return localStorage.getItem("token");
   }
 
-  async request(endpoint, options = {}, requireAuth = true) {
+  async request(endpoint, options = {}) {
     // Get fresh token on each request
     const token = this.getToken();
 
-    // Check auth requirement - allow public endpoints
-    if (requireAuth && !token && !endpoint.includes("/auth/")) {
+    if (!token && !endpoint.includes("/auth/")) {
       throw new Error("No token, authorization denied. Please login first.");
     }
 
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log("🌐 API Request:", url, "Auth required:", requireAuth);
-    
     const config = {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token && requireAuth && { Authorization: `Bearer ${token}` }),
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
     };
@@ -97,9 +94,6 @@ class ApiService {
           url: url,
           data: errorData,
         });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:85',message:'API error response received',data:{status:response.status,statusText:response.statusText,url,errorData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
         throw new Error(
           errorData.message ||
             errorData.error ||
@@ -325,75 +319,6 @@ class ApiService {
 
   async getProfileQR() {
     return this.request("/profile/qr");
-  }
-
-  // Public profile (no auth required)
-  async getPublicProfile(userId) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:328',message:'getPublicProfile called',data:{originalUserId:userId,type:typeof userId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    const encodedUserId = encodeURIComponent(userId);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:329',message:'userId encoded',data:{originalUserId:userId,encodedUserId,areEqual:userId===encodedUserId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    try {
-      // Try profile public endpoint first
-      const endpoint = `/profile/public/${encodedUserId}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:332',message:'Attempting profile endpoint',data:{endpoint,fullUrl:`${API_BASE_URL}${endpoint}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      return await this.request(endpoint, {
-        method: "GET",
-      }, false); // false = no auth required
-    } catch (error) {
-      // Fallback to users public endpoint if profile endpoint fails
-      console.warn("Profile endpoint failed, trying users public endpoint:", error);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:336',message:'Profile endpoint failed, trying fallback',data:{error:error.message,encodedUserId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      const fallbackEndpoint = `/users/public/${encodedUserId}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/cfda2f86-9a39-42a2-a74c-d404ed4b9a59',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:338',message:'Attempting users fallback endpoint',data:{endpoint:fallbackEndpoint,fullUrl:`${API_BASE_URL}${fallbackEndpoint}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      return await this.request(fallbackEndpoint, {
-        method: "GET",
-      }, false); // false = no auth required
-    }
-  }
-
-  // Review methods
-  async getUserReviews(userId, page = 1, limit = 10) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(
-      `/reviews/${encodedUserId}/reviews?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-      },
-      false // Public endpoint, no auth required
-    );
-  }
-
-  async createReview(userId, reviewData) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/reviews/${encodedUserId}/review`, {
-      method: "POST",
-      body: JSON.stringify(reviewData),
-    });
-  }
-
-  async getRatingSummary(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/reviews/${encodedUserId}/rating-summary`, {
-      method: "GET",
-    }, false); // Public endpoint, no auth required
-  }
-
-  // Vehicle methods
-  async getUserVehicles(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/vehicles/user/${encodedUserId}`, {
-      method: "GET",
-    }, false); // Public endpoint, no auth required
   }
 
   // User search for assignment

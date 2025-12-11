@@ -77,37 +77,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// --------------- Request Logger (for debugging) ---------------
-app.use((req, res, next) => {
-  // #region agent log
-  const fs = require('fs');
-  const path = require('path');
-  const logPath = path.join(__dirname, '..', '..', '.cursor', 'debug.log');
-  try {
-    fs.appendFileSync(logPath, JSON.stringify({
-      id: `log_${Date.now()}_request`,
-      timestamp: Date.now(),
-      location: 'server.js:80',
-      message: 'Incoming request',
-      data: { method: req.method, path: req.path, originalUrl: req.originalUrl, baseUrl: req.baseUrl },
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'C'
-    }) + '\n');
-  } catch (e) {
-    console.error('Log write error:', e.message);
-  }
-  // #endregion
-  next();
-});
-
 // --------------- Routes ---------------
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/vehicles", require("./routes/vehicles"));
 app.use("/api/profile", require("./routes/profile"));
-app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/verification", require("./routes/verification"));
 app.use("/api/chat", require("./routes/chat"));
 
@@ -125,33 +100,6 @@ app.get("/", (req, res) => {
   res.json({
     message: "Tripeaz Taxi Partners API",
     version: "1.0.0",
-  });
-});
-
-// 404 Handler - must be after all routes
-app.use((req, res, next) => {
-  // #region agent log
-  const fs = require('fs');
-  const path = require('path');
-  const logPath = path.join(__dirname, '..', '..', '.cursor', 'debug.log');
-  try {
-    fs.appendFileSync(logPath, JSON.stringify({
-      id: `log_${Date.now()}_404`,
-      timestamp: Date.now(),
-      location: 'server.js:131',
-      message: '404 - Route not found',
-      data: { method: req.method, path: req.path, originalUrl: req.originalUrl, baseUrl: req.baseUrl, url: req.url },
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'C'
-    }) + '\n');
-  } catch (e) {
-    console.error('Log write error:', e.message);
-  }
-  // #endregion
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
   });
 });
 
