@@ -1,34 +1,29 @@
 // Reviews & Ratings Page JavaScript
-
 let currentUserId = null;
 let currentPage = 1;
 let totalPages = 1;
-let ratingData = null;
+const reviewsPerPage = 10;
 
 // Initialize on page load
-document.addEventListener("DOMContentLoaded", () => {
-  // Get userId from URL params
+document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentUserId = urlParams.get("userId");
 
   if (!currentUserId) {
-    showError("User ID not provided");
+    showError("User ID not found");
     return;
   }
 
-  loadReviews();
-  loadRatingSummary();
+  await loadRatingSummary();
+  await loadReviews(1);
 });
 
-// Load rating summary from profile
+// Load rating summary
 async function loadRatingSummary() {
   try {
-    const apiService = new ApiService();
-    const response = await apiService.getPublicProfile(currentUserId);
-
-    if (response.success && response.data && response.data.rating) {
-      ratingData = response.data.rating;
-      displayRatingSummary(ratingData);
+    const response = await apiService.getRatingSummary(currentUserId);
+    if (response.success && response.data) {
+      displayRatingSummary(response.data);
     }
   } catch (error) {
     console.error("Error loading rating summary:", error);
@@ -36,263 +31,171 @@ async function loadRatingSummary() {
 }
 
 // Display rating summary
-function displayRatingSummary(rating) {
-  if (!rating) return;
+function displayRatingSummary(data) {
+  const avgRating = data.averageRating || 0;
+  const totalReviews = data.totalReviews || 0;
 
-  const avgRating = document.getElementById("averageRating");
-  if (avgRating) {
-    avgRating.textContent = rating.average.toFixed(1);
+  document.getElementById("averageRating").textContent = avgRating.toFixed(1);
+  document.getElementById("ratingText").textContent = `Based on ${totalReviews} rating${totalReviews !== 1 ? "s" : ""} & review${totalReviews !== 1 ? "s" : ""}`;
+
+  // Display rating distribution
+  if (data.percentages) {
+    for (let i = 5; i >= 1; i--) {
+      const percent = data.percentages[i] || 0;
+      document.getElementById(`bar${i}`).style.width = `${percent}%`;
+      document.getElementById(`percent${i}`).textContent = `${percent}%`;
+    }
   }
-
-  const reviewsSummary = document.getElementById("reviewsSummaryText");
-  if (reviewsSummary) {
-    reviewsSummary.textContent = `Based on ${rating.total} ratings & reviews`;
-  }
-
-  // Display distribution chart
-  renderRatingDistribution(rating.distribution, rating.total);
-}
-
-// Render rating distribution chart
-function renderRatingDistribution(distribution, total) {
-  const container = document.getElementById("distributionChart");
-  if (!container || !distribution) return;
-
-  const stars = [5, 4, 3, 2, 1];
-  container.innerHTML = stars
-    .map((star) => {
-      const count = distribution[star] || 0;
-      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-
-      return `
-        <div class="distribution-row">
-          <span class="star-label">${star} Star</span>
-          <div class="distribution-bar-container">
-            <div class="distribution-bar" style="width: ${percentage}%"></div>
-          </div>
-          <span class="distribution-percentage">${percentage}%</span>
-        </div>
-      `;
-    })
-    .join("");
 }
 
 // Load reviews
-async function loadReviews(page = 1) {
+async function loadReviews(page) {
   try {
     showLoading();
-    hideError();
-    hideContent();
 
-    currentPage = page;
-    const apiService = new ApiService();
-    const response = await apiService.getUserReviews(currentUserId, page, 10);
-
-    if (response.success && response.data) {
-      displayReviews(response.data);
-      updatePagination(response.pagination);
-      hideLoading();
-      showContent();
-    } else {
+    const response = await apiService.getUserReviews(currentUserId, page, reviewsPerPage);
+    if (!response.success) {
       throw new Error(response.message || "Failed to load reviews");
     }
+
+    const reviews = response.data || [];
+    const pagination = response.pagination || {};
+
+    currentPage = pagination.page || page;
+    totalPages = pagination.pages || 1;
+
+    displayReviews(reviews);
+    updatePagination();
+
+    hideLoading();
   } catch (error) {
     console.error("Error loading reviews:", error);
     showError(error.message || "Failed to load reviews");
-    hideLoading();
   }
 }
 
-// Display reviews list
+// Display reviews
 function displayReviews(reviews) {
-  const container = document.getElementById("reviewsList");
-  if (!container) return;
+  const reviewsList = document.getElementById("reviewsList");
 
-  if (!reviews || reviews.length === 0) {
-    container.innerHTML = '<p class="no-reviews-text">No reviews yet</p>';
+  if (reviews.length === 0) {
+    reviewsList.innerHTML = '<div class="no-reviews">No reviews yet</div>';
     return;
   }
 
-  container.innerHTML = reviews
+  reviewsList.innerHTML = reviews
     .map((review) => {
       const reviewer = review.reviewerUserId || {};
       const reviewerName = reviewer.name || "Anonymous";
-      const reviewerAvatar = reviewer.profile?.avatar
-        ? reviewer.profile.avatar
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            reviewerName
-          )}&background=ff9900&color=1a1a1a&size=100`;
+      const reviewerAvatar = reviewer.profile?.avatar || null;
+      const avatarUrl = reviewerAvatar
+        ? reviewerAvatar
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(reviewerName)}&background=ff9900&color=1a1a1a`;
 
-      const serviceName = review.serviceName || "Service";
-      const reviewDate = formatReviewDate(review.createdAt);
-      const rating = review.rating || 0;
-      const tags = review.tags || [];
-      const reviewText = review.reviewText || "";
-      const hasPictures = review.pictures && review.pictures.length > 0;
+      const reviewDate = new Date(review.createdAt);
+      const formattedDate = reviewDate.toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const formattedTime = reviewDate.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      const stars = "⭐".repeat(review.rating || 0);
 
       return `
         <div class="review-card">
           <div class="review-header">
             <div class="reviewer-info">
-              <img src="${reviewerAvatar}" alt="${reviewerName}" class="reviewer-avatar" />
+              <img src="${avatarUrl}" alt="${reviewerName}" class="reviewer-avatar">
               <div class="reviewer-details">
                 <h4 class="reviewer-name">${reviewerName}</h4>
-                <p class="service-name">${serviceName}</p>
-                <p class="review-date">${reviewDate}</p>
+                ${review.serviceName ? `<p class="service-name">${review.serviceName}</p>` : ""}
               </div>
             </div>
             <div class="review-rating">
-              <span class="rating-number">${rating.toFixed(1)}</span>
-              <div class="rating-stars-small">
-                ${generateStars(rating)}
-              </div>
+              <span class="rating-value-small">${(review.rating || 0).toFixed(1)}</span>
+              <span class="rating-stars">${stars}</span>
             </div>
           </div>
-          ${reviewText ? `<p class="review-text">${reviewText}</p>` : ""}
-          ${
-            tags.length > 0
-              ? `<div class="review-tags">${tags
-                  .map(
-                    (tag) =>
-                      `<span class="review-tag">${tag}</span>`
-                  )
-                  .join("")}</div>`
-              : ""
-          }
-          ${
-            hasPictures
-              ? `<button class="review-pictures-btn" onclick="showReviewPictures('${review._id}')">Click here to see review pictures</button>`
-              : ""
-          }
+          <div class="review-date">${formattedDate} @ ${formattedTime}</div>
+          ${review.reviewText ? `<div class="review-text">${review.reviewText}</div>` : ""}
+          ${review.tags && review.tags.length > 0 ? `<div class="review-tags">${review.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>` : ""}
+          ${review.pictures && review.pictures.length > 0 ? `<div class="review-pictures"><button class="view-pictures-btn" onclick="viewReviewPictures(${JSON.stringify(review.pictures).replace(/"/g, '&quot;')})">Click here to see review pictures</button></div>` : ""}
         </div>
       `;
     })
     .join("");
 }
 
-// Generate star rating display
-function generateStars(rating) {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-  let starsHTML = "";
-
-  for (let i = 0; i < 5; i++) {
-    if (i < fullStars) {
-      starsHTML += '<span class="star filled">⭐</span>';
-    } else if (i === fullStars && hasHalfStar) {
-      starsHTML += '<span class="star half">⭐</span>';
-    } else {
-      starsHTML += '<span class="star">⭐</span>';
-    }
-  }
-  return starsHTML;
-}
-
-// Format review date
-function formatReviewDate(dateString) {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.toLocaleDateString("en-IN", { month: "short" });
-    const year = date.getFullYear();
-    const time = date.toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return `${month} ${day}, ${year} @ ${time}`;
-  } catch (error) {
-    return "";
-  }
-}
-
-// Update pagination controls
-function updatePagination(pagination) {
-  if (!pagination) return;
-
-  totalPages = pagination.pages || 1;
-  const container = document.getElementById("paginationContainer");
-  const prevBtn = document.getElementById("prevPageBtn");
-  const nextBtn = document.getElementById("nextPageBtn");
-  const info = document.getElementById("paginationInfo");
+// Update pagination
+function updatePagination() {
+  const pagination = document.getElementById("pagination");
+  const paginationInfo = document.getElementById("paginationInfo");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
 
   if (totalPages <= 1) {
-    if (container) container.style.display = "none";
+    pagination.style.display = "none";
     return;
   }
 
-  if (container) container.style.display = "flex";
-  if (prevBtn) prevBtn.disabled = currentPage <= 1;
-  if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-  if (info) {
-    info.textContent = `Page ${currentPage} of ${totalPages}`;
+  pagination.style.display = "flex";
+  paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+}
+
+// Load previous page
+function loadPreviousPage() {
+  if (currentPage > 1) {
+    loadReviews(currentPage - 1);
   }
 }
 
-// Handle pagination
-function handlePagination(direction) {
-  if (direction === "prev" && currentPage > 1) {
-    loadReviews(currentPage - 1);
-  } else if (direction === "next" && currentPage < totalPages) {
+// Load next page
+function loadNextPage() {
+  if (currentPage < totalPages) {
     loadReviews(currentPage + 1);
   }
 }
 
-// Show review pictures (placeholder)
-function showReviewPictures(reviewId) {
-  alert("Review pictures feature coming soon");
-}
-
-// Navigation functions
-function goBack() {
-  window.history.back();
-}
-
-function navigateToTab(tabName) {
-  if (tabName === "fab") {
-    return;
+// View review pictures
+function viewReviewPictures(pictures) {
+  // Simple implementation - could be enhanced with a modal/lightbox
+  if (pictures && pictures.length > 0) {
+    const imageUrls = pictures.join("\n");
+    alert(`Review Pictures:\n${imageUrls}\n\n(Full image viewer coming soon)`);
   }
-  window.location.href = `dashboard.html#${tabName}`;
 }
 
-// UI State Management
+// Show loading state
 function showLoading() {
-  const loading = document.getElementById("loadingContainer");
-  if (loading) loading.style.display = "flex";
+  const reviewsList = document.getElementById("reviewsList");
+  reviewsList.innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading reviews...</p>
+    </div>
+  `;
 }
 
+// Hide loading state
 function hideLoading() {
-  const loading = document.getElementById("loadingContainer");
-  if (loading) loading.style.display = "none";
+  // Loading state is replaced by reviews, so nothing to hide
 }
 
+// Show error state
 function showError(message) {
-  const error = document.getElementById("errorContainer");
-  const errorMsg = document.getElementById("errorMessage");
-  if (error) error.style.display = "flex";
-  if (errorMsg && message) errorMsg.textContent = message;
+  const reviewsList = document.getElementById("reviewsList");
+  reviewsList.innerHTML = `
+    <div class="error-state">
+      <p>${message}</p>
+    </div>
+  `;
 }
-
-function hideError() {
-  const error = document.getElementById("errorContainer");
-  if (error) error.style.display = "none";
-}
-
-function showContent() {
-  const content = document.getElementById("reviewsContent");
-  if (content) content.style.display = "block";
-}
-
-function hideContent() {
-  const content = document.getElementById("reviewsContent");
-  if (content) content.style.display = "none";
-}
-
-// Make functions globally accessible
-window.goBack = goBack;
-window.navigateToTab = navigateToTab;
-window.handlePagination = handlePagination;
-window.showReviewPictures = showReviewPictures;
-window.loadReviews = loadReviews;
 

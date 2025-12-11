@@ -132,12 +132,15 @@ const userSchema = new mongoose.Schema(
     },
     profile: {
       avatar: String,
+      coverImage: String, // Background/cover photo URL
       address: String,
       city: String,
       state: String,
       pincode: String,
-      language: { type: String, default: "english" },
+      language: { type: String, default: "english" }, // Keep for backward compatibility
+      languages: [String], // Array of languages: ["Hindi", "English", "Punjabi"]
       // Business Information
+      businessDescription: String, // Company description
       businessOperationCity: String,
       businessOperationState: String,
       numberOfVehicles: { type: Number, default: 0 },
@@ -151,14 +154,11 @@ const userSchema = new mongoose.Schema(
       businessRegistrationNumber: String,
       businessType: String, // e.g., "Sole Proprietorship", "Partnership", "LLP", "Private Limited"
       yearsInBusiness: Number,
+      experience: Number, // Years of experience (driving/business)
       serviceAreas: [String], // Cities/areas where they operate
+      preferredTrips: [String], // Array of preferred trip types: ["round-trip", "airport", "one-way", "local-duty"]
+      preferredRoutes: [String], // Array of preferred routes: ["Ludhiana → Amritsar", "Ludhiana → Delhi"]
       isProfileComplete: { type: Boolean, default: false },
-      // Additional profile fields for public profile
-      businessDescription: String,
-      age: Number, // Can be calculated from dob
-      preferredTrips: [String], // e.g., ["Round Trip", "Airport", "One Way", "Local Duty"]
-      preferredRoutes: [String], // e.g., ["Ludhiana -> Amritsar", "Ludhiana -> Delhi"]
-      languages: [String], // e.g., ["Hindi", "English", "Punjabi", "Gujarati"]
     },
     wallet: {
       balance: { type: Number, default: 0 },

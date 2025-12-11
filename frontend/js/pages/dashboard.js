@@ -1040,30 +1040,6 @@ function createBookingCard(booking) {
   const bookingId =
     booking.bookingId || booking._id?.toString().slice(-6) || "N/A";
 
-  // Get user ID for profile - handle both populated and non-populated cases
-  let userIdForProfile = "";
-  if (booking.postedBy) {
-    if (typeof booking.postedBy === "object") {
-      // If populated object, use _id
-      userIdForProfile = booking.postedBy._id ? booking.postedBy._id.toString() : "";
-    } else if (typeof booking.postedBy === "string") {
-      // If it's already a string (ObjectId string)
-      userIdForProfile = booking.postedBy;
-    } else {
-      // Try to convert to string
-      try {
-        userIdForProfile = String(booking.postedBy);
-      } catch (e) {
-        console.error("Error converting postedBy to string:", e);
-      }
-    }
-  }
-  
-  // Log for debugging
-  if (!userIdForProfile) {
-    console.warn("No userId found for booking:", booking._id, "postedBy:", booking.postedBy);
-  }
-
   // Check if card should be restricted
   const profileSkipped = sessionStorage.getItem("profileSkipped") === "true";
   const verificationSkipped =
@@ -1078,7 +1054,7 @@ function createBookingCard(booking) {
          data-booking-id="${booking._id || ""}">
       <div class="card-header">
         <div class="user-info">
-          <div class="user-avatar" ${userIdForProfile ? `onclick="openUserProfile('${userIdForProfile}')" style="cursor: pointer;"` : ''}>
+          <div class="user-avatar" onclick="openUserProfile('${booking.postedBy?._id || booking.postedBy || ""}')" style="cursor: pointer;" title="View Profile">
             <img src="${avatarUrl}" alt="${userName}">
           </div>
           <div class="user-details">
@@ -1166,18 +1142,6 @@ function createBookingCard(booking) {
     </div>
   `;
 }
-
-// ===== OPEN USER PROFILE =====
-function openUserProfile(userId) {
-  if (!userId) {
-    console.error("User ID not available");
-    return;
-  }
-  window.location.href = `user-profile.html?userId=${userId}`;
-}
-
-// Make globally accessible
-window.openUserProfile = openUserProfile;
 
 // ===== CREATE VEHICLE CARD FROM API DATA =====
 function createVehicleCard(vehicle) {
@@ -3796,4 +3760,16 @@ function filterVehicleOptions(event) {
     const text = option.textContent.toLowerCase();
     option.style.display = text.includes(searchTerm) ? "flex" : "none";
   });
+}
+
+// ===== OPEN USER PROFILE =====
+function openUserProfile(userId) {
+  if (!userId) {
+    console.error("User ID not available");
+    alert("User profile not available");
+    return;
+  }
+  
+  // Navigate to user profile page with userId
+  window.location.href = `user-profile.html?userId=${encodeURIComponent(userId)}`;
 }

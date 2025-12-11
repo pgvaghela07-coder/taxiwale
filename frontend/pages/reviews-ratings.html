@@ -1,121 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reviews & Ratings | Tripeaz Taxi Partners</title>
-    <link rel="stylesheet" href="../css/pages/dashboard.css" />
-    <link rel="stylesheet" href="../css/pages/reviews-ratings.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviews & Ratings | Tripeaz Taxi Partners</title>
+  <link rel="stylesheet" href="../css/pages/dashboard.css">
+  <link rel="stylesheet" href="../css/pages/reviews-ratings.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="reviews-page">
+    <!-- Back Button -->
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
 
-  <body>
     <!-- Header -->
-    <header class="main-header">
-      <div class="header-content">
-        <div class="header-logo">
-          <button class="back-button" onclick="goBack()" aria-label="Back">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z" />
-            </svg>
-          </button>
-          <h2 class="logo-text">Reviews & Ratings</h2>
+    <div class="page-header">
+      <h1>Reviews & Ratings</h1>
+    </div>
+
+    <!-- Rating Summary -->
+    <div class="rating-summary-section">
+      <div class="rating-display-large">
+        <span class="rating-star-large">⭐</span>
+        <span class="rating-value-large" id="averageRating">0.0</span>
+      </div>
+      <div class="rating-text-large" id="ratingText">Based on 0 ratings & reviews</div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div class="rating-distribution-section">
+      <h3 class="section-title">Rating Distribution</h3>
+      <div class="distribution-item">
+        <span class="star-label">5 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar5" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent5">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">4 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar4" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent4">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">3 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar3" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent3">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">2 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar2" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent2">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">1 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar1" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent1">0%</span>
+      </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-section">
+      <h3 class="section-title">Reviews</h3>
+      <div class="reviews-list" id="reviewsList">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading reviews...</p>
         </div>
       </div>
-      <div class="header-border"></div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="reviews-main">
-      <!-- Loading State -->
-      <div class="loading-container" id="loadingContainer">
-        <div class="loading-spinner"></div>
-        <p>Loading reviews...</p>
-      </div>
+    <!-- Pagination -->
+    <div class="pagination" id="pagination" style="display: none;">
+      <button class="pagination-btn" id="prevBtn" onclick="loadPreviousPage()">Previous</button>
+      <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+      <button class="pagination-btn" id="nextBtn" onclick="loadNextPage()">Next</button>
+    </div>
 
-      <!-- Error State -->
-      <div class="error-container" id="errorContainer" style="display: none;">
-        <div class="error-icon">⚠️</div>
-        <h3>Error Loading Reviews</h3>
-        <p id="errorMessage">Failed to load reviews. Please try again.</p>
-        <button class="retry-button" onclick="loadReviews()">Retry</button>
-      </div>
+    <!-- Error State -->
+    <div class="error-state" id="errorState" style="display: none;">
+      <p id="errorMessage">Error loading reviews</p>
+    </div>
+  </div>
 
-      <!-- Reviews Content -->
-      <div class="reviews-content" id="reviewsContent" style="display: none;">
-        <!-- Rating Summary Section -->
-        <div class="rating-summary-section">
-          <div class="rating-display-large">
-            <span class="rating-number" id="averageRating">0.0</span>
-            <span class="rating-star-icon">⭐</span>
-          </div>
-          <p class="reviews-summary-text" id="reviewsSummaryText">
-            Based on 0 ratings & reviews
-          </p>
-        </div>
-
-        <!-- Rating Distribution Chart -->
-        <div class="rating-distribution-section">
-          <h3 class="section-title">Rating Distribution</h3>
-          <div class="distribution-chart" id="distributionChart">
-            <!-- Distribution bars will be dynamically added here -->
-          </div>
-        </div>
-
-        <!-- Reviews List -->
-        <div class="reviews-list-section">
-          <h3 class="section-title">Reviews</h3>
-          <div class="reviews-list" id="reviewsList">
-            <!-- Reviews will be dynamically added here -->
-          </div>
-
-          <!-- Pagination -->
-          <div class="pagination-container" id="paginationContainer" style="display: none;">
-            <button class="pagination-btn" id="prevPageBtn" onclick="handlePagination('prev')" disabled>
-              Previous
-            </button>
-            <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
-            <button class="pagination-btn" id="nextPageBtn" onclick="handlePagination('next')" disabled>
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Footer Navigation -->
-    <footer class="footer-nav">
-      <nav class="nav-tabs">
-        <button class="nav-tab" data-tab="available" onclick="navigateToTab('available')">
-          <div class="tab-icon">🚖</div>
-          <span class="tab-label">Available</span>
-        </button>
-        <button class="nav-tab" data-tab="features" onclick="navigateToTab('features')">
-          <div class="tab-icon">⭐</div>
-          <span class="tab-label">Features</span>
-        </button>
-        <button class="nav-tab fab-button" onclick="navigateToTab('fab')">
-          <div class="fab-icon nav-fab-icon">+</div>
-        </button>
-        <button class="nav-tab" data-tab="bookings" onclick="navigateToTab('bookings')">
-          <div class="tab-icon">📋</div>
-          <span class="tab-label">Bookings</span>
-        </button>
-        <button class="nav-tab" data-tab="profile" onclick="navigateToTab('profile')">
-          <div class="tab-icon">👤</div>
-          <span class="tab-label">Profile</span>
-        </button>
-      </nav>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="../js/services/api.js"></script>
-    <script src="../js/pages/reviews-ratings.js"></script>
-  </body>
+  <script src="../js/services/api.js"></script>
+  <script src="../js/pages/reviews-ratings.js"></script>
+</body>
 </html>
 

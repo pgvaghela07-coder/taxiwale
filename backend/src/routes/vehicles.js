@@ -1,72 +1,27 @@
 const express = require("express");
 const router = express.Router();
+const {
+  getUserVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+} = require("../controllers/vehicleController");
 const auth = require("../middleware/auth");
 
-// Temporary placeholder routes - Vehicle functionality needs to be implemented
-// These routes return 501 (Not Implemented) errors
+// Public routes (no auth required) - must be before /:id routes
+router.get("/user/:userId", getUserVehicles);
 
-router.get("/", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
+// Protected routes (auth required)
+router.get("/my-vehicles", auth, async (req, res) => {
+  // Get current user's vehicles
+  const { getUserVehicles } = require("../controllers/vehicleController");
+  req.params.userId = req.userId;
+  return getUserVehicles(req, res);
 });
 
-router.get("/my-vehicles", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.get("/:id", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.post("/", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.put("/:id", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.delete("/:id", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.post("/:id/assign", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.post("/:id/close", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
-
-router.post("/:id/comment", auth, (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: "Vehicle functionality is not yet implemented",
-  });
-});
+router.post("/", auth, createVehicle);
+router.put("/:id", auth, updateVehicle);
+router.delete("/:id", auth, deleteVehicle);
 
 module.exports = router;
 

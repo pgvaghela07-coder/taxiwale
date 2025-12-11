@@ -1,371 +1,268 @@
 // User Profile Page JavaScript
-
 let currentUserId = null;
-let currentUserData = null;
-let userMobile = null;
+let profileData = null;
 
 // Initialize on page load
-document.addEventListener("DOMContentLoaded", () => {
-  // Get userId from URL params
+document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentUserId = urlParams.get("userId");
 
   if (!currentUserId) {
-    showError("User ID not provided");
+    showError("User ID not found");
     return;
   }
 
-  loadUserProfile();
+  await loadUserProfile();
+  setupEventListeners();
 });
 
 // Load user profile data
 async function loadUserProfile() {
   try {
     showLoading();
-    hideError();
-    hideContent();
 
-    if (!currentUserId) {
-      throw new Error("User ID is required");
+    // Load profile data
+    const profileResponse = await apiService.getPublicProfile(currentUserId);
+    if (!profileResponse.success) {
+      throw new Error(profileResponse.message || "Failed to load profile");
     }
 
-    console.log("Loading profile for userId:", currentUserId);
+    profileData = profileResponse.data;
+    displayProfile(profileData);
 
-    const apiService = new ApiService();
-    const response = await apiService.getPublicProfile(currentUserId);
+    // Load vehicles
+    await loadUserVehicles();
 
-    console.log("Profile API response:", response);
-
-    if (response.success && response.data) {
-      currentUserData = response.data;
-      userMobile = currentUserData.mobile;
-      displayProfile(response.data);
-      loadUserVehicles(currentUserId);
-      hideLoading();
-      showContent();
-    } else {
-      const errorMsg = response.message || "Failed to load profile";
-      console.error("Profile API error:", errorMsg, response);
-      throw new Error(errorMsg);
-    }
+    hideLoading();
   } catch (error) {
     console.error("Error loading profile:", error);
-    const errorMessage = error.message || "Failed to load user profile. Please check if the user exists.";
-    showError(errorMessage);
-    hideLoading();
+    showError(error.message || "Failed to load profile");
   }
 }
 
-// Display profile data in UI
-function displayProfile(user) {
-  // Profile header
-  const avatar = document.getElementById("profileAvatar");
-  if (avatar) {
-    if (user.profile?.avatar) {
-      avatar.src = user.profile.avatar;
-    } else {
-      // Generate avatar from name
-      const name = user.name || "User";
-      avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        name
-      )}&background=ff9900&color=1a1a1a&size=200`;
-    }
-    avatar.alt = user.name || "Profile";
+// Display profile data
+function displayProfile(data) {
+  // Cover image
+  const coverImage = document.getElementById("coverImage");
+  if (data.profile?.coverImage) {
+    coverImage.style.backgroundImage = `url(${data.profile.coverImage})`;
+  } else {
+    coverImage.style.backgroundColor = "#e0e0e0";
   }
 
-  // Name
-  const nameEl = document.getElementById("profileName");
-  if (nameEl) {
-    nameEl.textContent = user.name || "Unknown User";
+  // Profile avatar
+  const avatar = document.getElementById("profileAvatarLarge");
+  if (data.profile?.avatar) {
+    avatar.innerHTML = `<img src="${data.profile.avatar}" alt="${data.name}">`;
+  } else {
+    const firstLetter = (data.name || "U").charAt(0).toUpperCase();
+    avatar.innerHTML = `<div class="avatar-placeholder">${firstLetter}</div>`;
   }
 
-  // Location
-  const locationEl = document.getElementById("profileLocation");
-  if (locationEl) {
-    const city = user.profile?.city || "";
-    const state = user.profile?.state || "";
-    locationEl.textContent = city && state ? `${city}, ${state}` : city || state || "Location not specified";
+  // Name and location
+  document.getElementById("profileName").textContent = data.name || "Unknown User";
+  const locationInfo = document.getElementById("locationInfo");
+  if (data.profile?.city || data.profile?.state) {
+    locationInfo.textContent = `${data.profile.city || ""}${data.profile.city && data.profile.state ? ", " : ""}${data.profile.state || ""}`;
   }
 
   // Verified badge
   const verifiedBadge = document.getElementById("verifiedBadge");
-  if (verifiedBadge) {
-    if (user.verificationStatus?.isVerified) {
-      verifiedBadge.style.display = "flex";
-    } else {
-      verifiedBadge.style.display = "none";
-    }
+  if (data.isVerified) {
+    verifiedBadge.innerHTML = '<span class="verified-badge">✓ Verified</span>';
   }
 
-  // Profile details
-  document.getElementById("businessName").textContent =
-    user.businessName || "-";
-  document.getElementById("businessDescription").textContent =
-    user.profile?.businessDescription || "-";
-  document.getElementById("tripsPosted").textContent =
-    user.tripsPostedCount || 0;
-  document.getElementById("memberSince").textContent = formatDate(
-    user.memberSince
-  );
-  document.getElementById("email").textContent = user.email || "-";
-  document.getElementById("phoneNumber").textContent = formatPhoneNumber(
-    user.mobile || ""
-  );
-  document.getElementById("address").textContent =
-    user.profile?.address || "-";
-
-  // About section
-  const experience = user.profile?.yearsInBusiness || 0;
-  document.getElementById("experience").textContent =
-    experience > 0 ? `${experience} year(s)` : "-";
-  const age = user.age || user.profile?.age;
-  document.getElementById("age").textContent = age ? `${age} yr` : "-";
-
-  // Preferred trips and routes
-  displayPreferredTripsAndRoutes(user.profile);
-
-  // Languages
-  displayLanguages(user.profile?.languages || []);
+  // User info card
+  document.getElementById("companyName").textContent = data.businessName || "-";
+  document.getElementById("emailId").textContent = data.email || "-";
+  document.getElementById("cancelledCount").textContent = data.bookingCancelledCount || 0;
 
   // Rating summary
-  displayRatingSummary(user.rating);
+  const avgRating = data.rating?.average || 0;
+  const totalReviews = data.rating?.totalReviews || 0;
+  document.getElementById("averageRating").textContent = avgRating.toFixed(1);
+  document.getElementById("ratingText").textContent = `Based on ${totalReviews} rating${totalReviews !== 1 ? "s" : ""} & review${totalReviews !== 1 ? "s" : ""}`;
+
+  // Rating distribution
+  if (totalReviews > 0 && data.rating?.percentages) {
+    displayRatingDistribution(data.rating.percentages);
+  }
+
+  // About section
+  if (data.profile?.experience) {
+    document.getElementById("experienceItem").style.display = "flex";
+    document.getElementById("experienceValue").textContent = `${data.profile.experience} year${data.profile.experience !== 1 ? "s" : ""}`;
+  }
+
+  if (data.age) {
+    document.getElementById("ageItem").style.display = "flex";
+    document.getElementById("ageValue").textContent = `${data.age} yr`;
+  }
+
+  if (data.profile?.businessDescription) {
+    const descEl = document.getElementById("businessDescription");
+    descEl.style.display = "block";
+    descEl.textContent = data.profile.businessDescription;
+  }
+
+  // Preferred trips
+  if (data.profile?.preferredTrips && data.profile.preferredTrips.length > 0) {
+    document.getElementById("preferredTripsSection").style.display = "block";
+    const chipsContainer = document.getElementById("preferredTripsChips");
+    chipsContainer.innerHTML = data.profile.preferredTrips
+      .map(
+        (trip) =>
+          `<span class="chip">${formatTripType(trip)}</span>`
+      )
+      .join("");
+  }
+
+  // Preferred routes
+  if (data.profile?.preferredRoutes && data.profile.preferredRoutes.length > 0) {
+    const routesContainer = document.getElementById("preferredRoutesChips");
+    routesContainer.innerHTML = data.profile.preferredRoutes
+      .map((route) => `<span class="chip">${route}</span>`)
+      .join("");
+  }
+
+  // Languages
+  if (data.profile?.languages && data.profile.languages.length > 0) {
+    document.getElementById("languagesSection").style.display = "block";
+    const languagesContainer = document.getElementById("languagesChips");
+    languagesContainer.innerHTML = data.profile.languages
+      .map((lang) => `<span class="chip">${lang}</span>`)
+      .join("");
+  }
 }
 
-// Display preferred trips and routes
-function displayPreferredTripsAndRoutes(profile) {
-  const container = document.getElementById("preferredTags");
-  if (!container) return;
-
-  const trips = profile?.preferredTrips || [];
-  const routes = profile?.preferredRoutes || [];
-  const allItems = [...trips, ...routes];
-
-  if (allItems.length === 0) {
-    container.innerHTML = '<p class="no-data-text">No preferred trips/routes specified</p>';
-    return;
-  }
-
-  container.innerHTML = allItems
-    .map((item) => {
-      const icon = item.includes("->") || item.includes("→") ? "🛣️" : 
-                   item.toLowerCase().includes("airport") ? "✈️" :
-                   item.toLowerCase().includes("round") ? "↔️" :
-                   item.toLowerCase().includes("one way") ? "→" :
-                   item.toLowerCase().includes("local") ? "🚗" : "📍";
-      return `<span class="tag-item">${icon} ${item}</span>`;
-    })
-    .join("");
-}
-
-// Display languages
-function displayLanguages(languages) {
-  const container = document.getElementById("languagesContent");
-  if (!container) return;
-
-  if (!languages || languages.length === 0) {
-    container.innerHTML = '<p class="no-data-text">Languages not specified</p>';
-    return;
-  }
-
-  container.innerHTML = `<div class="languages-list">${languages
-    .map((lang) => `<span class="language-tag">${lang}</span>`)
-    .join("")}</div>`;
-}
-
-// Display rating summary
-function displayRatingSummary(rating) {
-  if (!rating) return;
-
-  const avgRating = document.getElementById("averageRating");
-  if (avgRating) {
-    avgRating.textContent = rating.average.toFixed(1);
-  }
-
-  const starsEl = document.getElementById("ratingStars");
-  if (starsEl) {
-    const fullStars = Math.floor(rating.average);
-    const hasHalfStar = rating.average % 1 >= 0.5;
-    let starsHTML = "";
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        starsHTML += '<span class="star filled">⭐</span>';
-      } else if (i === fullStars && hasHalfStar) {
-        starsHTML += '<span class="star half">⭐</span>';
-      } else {
-        starsHTML += '<span class="star">⭐</span>';
-      }
-    }
-    starsEl.innerHTML = starsHTML;
-  }
-
-  const reviewsCount = document.getElementById("reviewsCount");
-  if (reviewsCount) {
-    reviewsCount.textContent = `Based on ${rating.total} ratings & reviews`;
+// Display rating distribution
+function displayRatingDistribution(percentages) {
+  document.getElementById("ratingDistributionCard").style.display = "block";
+  for (let i = 5; i >= 1; i--) {
+    const percent = percentages[i] || 0;
+    document.getElementById(`bar${i}`).style.width = `${percent}%`;
+    document.getElementById(`percent${i}`).textContent = `${percent}%`;
   }
 }
 
 // Load user vehicles
-async function loadUserVehicles(userId) {
+async function loadUserVehicles() {
   try {
-    const apiService = new ApiService();
-    // Note: We need to check if there's an endpoint to get vehicles by userId
-    // For now, we'll show a placeholder
-    const container = document.getElementById("vehiclesContainer");
-    if (container) {
-      container.innerHTML = '<p class="no-data-text">Vehicle listing feature coming soon</p>';
+    const vehiclesResponse = await apiService.getUserVehicles(currentUserId);
+    if (vehiclesResponse.success && vehiclesResponse.data.length > 0) {
+      document.getElementById("vehiclesSection").style.display = "block";
+      displayVehicles(vehiclesResponse.data);
     }
   } catch (error) {
     console.error("Error loading vehicles:", error);
-    const container = document.getElementById("vehiclesContainer");
-    if (container) {
-      container.innerHTML = '<p class="no-data-text">Failed to load vehicles</p>';
+    // Don't show error, just don't display vehicles section
+  }
+}
+
+// Display vehicles
+function displayVehicles(vehicles) {
+  const vehiclesList = document.getElementById("vehiclesList");
+  vehiclesList.innerHTML = vehicles
+    .map((vehicle) => {
+      const vehicleTypeEmoji = getVehicleTypeEmoji(vehicle.vehicleType);
+      return `
+        <div class="vehicle-card">
+          <div class="vehicle-header">
+            <h4>${vehicle.vehicleName || "Vehicle"}</h4>
+            <span class="vehicle-price">₹${vehicle.pricePerKm || 0}/Km</span>
+          </div>
+          <div class="vehicle-details">
+            <span class="vehicle-type">${vehicleTypeEmoji} ${vehicle.vehicleType || ""}</span>
+            ${vehicle.vehicleAge ? `<span class="vehicle-age">Age: ${vehicle.vehicleAge}</span>` : ""}
+          </div>
+          ${vehicle.images && vehicle.images.length > 0 ? `<img src="${vehicle.images[0]}" alt="${vehicle.vehicleName}" class="vehicle-image">` : ""}
+        </div>
+      `;
+    })
+    .join("");
+}
+
+// Format trip type
+function formatTripType(trip) {
+  const tripMap = {
+    "round-trip": "Round Trip",
+    "airport": "Airport",
+    "one-way": "One Way",
+    "local-duty": "Local Duty",
+  };
+  return tripMap[trip] || trip;
+}
+
+// Get vehicle type emoji
+function getVehicleTypeEmoji(type) {
+  const emojiMap = {
+    sedan: "🚙",
+    suv: "🚗",
+    hatchback: "🚗",
+    luxury: "🚖",
+    traveller: "🚐",
+    bus: "🚌",
+  };
+  return emojiMap[type?.toLowerCase()] || "🚗";
+}
+
+// Setup event listeners
+function setupEventListeners() {
+  // Call button
+  document.getElementById("callBtn").addEventListener("click", () => {
+    if (profileData?.mobile) {
+      window.location.href = `tel:${profileData.mobile}`;
     }
-  }
-}
+  });
 
-// Format date
-function formatDate(dateString) {
-  if (!dateString) return "-";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch (error) {
-    return "-";
-  }
-}
+  // WhatsApp button
+  document.getElementById("whatsappBtn").addEventListener("click", () => {
+    if (profileData?.mobile) {
+      const message = encodeURIComponent(`Hello ${profileData.name || ""}`);
+      window.open(`https://wa.me/${profileData.mobile}?text=${message}`, "_blank");
+    }
+  });
 
-// Format phone number
-function formatPhoneNumber(mobile) {
-  if (!mobile) return "-";
-  const digits = mobile.replace(/\D/g, "");
-  if (digits.length === 10) {
-    return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
-  }
-  if (digits.length === 12 && digits.startsWith("91")) {
-    return `+${digits.slice(0, 2)} ${digits.slice(2, 7)} ${digits.slice(7)}`;
-  }
-  return mobile;
-}
+  // Share button
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profileData?.name || "User"}'s Profile`,
+          text: `Check out ${profileData?.name || "this user"}'s profile`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      alert("Profile link copied to clipboard!");
+    }
+  });
 
-// Action button handlers
-function handleCall() {
-  if (!userMobile) {
-    alert("Phone number not available");
-    return;
-  }
-  window.location.href = `tel:${userMobile}`;
-}
-
-function handleWhatsApp() {
-  if (!userMobile) {
-    alert("Phone number not available");
-    return;
-  }
-  const message = encodeURIComponent(
-    `Hello! I'm interested in your taxi services.`
-  );
-  const whatsappUrl = `https://wa.me/91${userMobile.replace(/\D/g, "")}?text=${message}`;
-  window.open(whatsappUrl, "_blank");
-}
-
-function handleShare() {
-  if (navigator.share) {
-    navigator.share({
-      title: `${currentUserData?.name || "User"}'s Profile`,
-      text: `Check out ${currentUserData?.name || "this user"}'s profile on Tripeaz Taxi Partners`,
-      url: window.location.href,
-    }).catch((error) => {
-      console.error("Error sharing:", error);
-      copyToClipboard();
-    });
-  } else {
-    copyToClipboard();
-  }
-}
-
-function copyToClipboard() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    alert("Profile link copied to clipboard!");
-  }).catch(() => {
-    alert("Failed to copy link. Please copy manually: " + url);
+  // View reviews button
+  document.getElementById("viewReviewsBtn").addEventListener("click", () => {
+    window.location.href = `reviews-ratings.html?userId=${currentUserId}`;
   });
 }
 
-// Navigation functions
-function openReviewsPage() {
-  if (!currentUserId) return;
-  window.location.href = `reviews-ratings.html?userId=${currentUserId}`;
-}
-
-function goBack() {
-  window.history.back();
-}
-
-function navigateToTab(tabName) {
-  if (tabName === "fab") {
-    // Handle FAB click - could open a menu or navigate
-    return;
-  }
-  window.location.href = `dashboard.html#${tabName}`;
-}
-
-function showPreferredDetails() {
-  // Could show a modal with more details
-  alert("Preferred trips and routes details");
-}
-
-function showLanguagesDetails() {
-  // Could show a modal with more details
-  alert("Languages details");
-}
-
-// UI State Management
+// Show loading state
 function showLoading() {
-  const loading = document.getElementById("loadingContainer");
-  if (loading) loading.style.display = "flex";
+  document.getElementById("loadingState").style.display = "flex";
+  document.getElementById("errorState").style.display = "none";
 }
 
+// Hide loading state
 function hideLoading() {
-  const loading = document.getElementById("loadingContainer");
-  if (loading) loading.style.display = "none";
+  document.getElementById("loadingState").style.display = "none";
 }
 
+// Show error state
 function showError(message) {
-  const error = document.getElementById("errorContainer");
-  const errorMsg = document.getElementById("errorMessage");
-  if (error) error.style.display = "flex";
-  if (errorMsg && message) errorMsg.textContent = message;
+  document.getElementById("loadingState").style.display = "none";
+  document.getElementById("errorState").style.display = "block";
+  document.getElementById("errorMessage").textContent = message;
 }
-
-function hideError() {
-  const error = document.getElementById("errorContainer");
-  if (error) error.style.display = "none";
-}
-
-function showContent() {
-  const content = document.getElementById("profileContent");
-  if (content) content.style.display = "block";
-}
-
-function hideContent() {
-  const content = document.getElementById("profileContent");
-  if (content) content.style.display = "none";
-}
-
-// Make functions globally accessible
-window.handleCall = handleCall;
-window.handleWhatsApp = handleWhatsApp;
-window.handleShare = handleShare;
-window.openReviewsPage = openReviewsPage;
-window.goBack = goBack;
-window.navigateToTab = navigateToTab;
-window.showPreferredDetails = showPreferredDetails;
-window.showLanguagesDetails = showLanguagesDetails;
-window.loadUserProfile = loadUserProfile;
 

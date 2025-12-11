@@ -83,6 +83,7 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/vehicles", require("./routes/vehicles"));
 app.use("/api/profile", require("./routes/profile"));
+app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/verification", require("./routes/verification"));
 app.use("/api/chat", require("./routes/chat"));
 

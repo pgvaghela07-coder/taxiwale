@@ -1,231 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile | Tripeaz Taxi Partners</title>
-    <link rel="stylesheet" href="../css/pages/dashboard.css" />
-    <link rel="stylesheet" href="../css/pages/user-profile.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile | Tripeaz Taxi Partners</title>
+  <link rel="stylesheet" href="../css/pages/dashboard.css">
+  <link rel="stylesheet" href="../css/pages/user-profile.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="profile-page">
+    <!-- Back Button -->
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
 
-  <body>
-    <!-- Header -->
-    <header class="main-header">
-      <div class="header-content">
-        <div class="header-logo">
-          <button class="back-button" onclick="goBack()" aria-label="Back">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z" />
-            </svg>
-          </button>
-          <h2 class="logo-text">User Profile</h2>
+    <!-- Profile Header with Cover Image -->
+    <div class="profile-header-section">
+      <div class="cover-image" id="coverImage"></div>
+      <div class="profile-header-content">
+        <div class="profile-avatar-large" id="profileAvatarLarge">
+          <div class="avatar-placeholder">👤</div>
+        </div>
+        <div class="profile-basic-info">
+          <h1 class="profile-name" id="profileName">Loading...</h1>
+          <div class="location-info" id="locationInfo"></div>
+          <div class="verified-badge-container" id="verifiedBadge"></div>
         </div>
       </div>
-      <div class="header-border"></div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="user-profile-main">
-      <!-- Loading State -->
-      <div class="loading-container" id="loadingContainer">
-        <div class="loading-spinner"></div>
-        <p>Loading profile...</p>
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="action-btn call-btn" id="callBtn">
+        <span class="btn-icon">📞</span>
+        <span>Call</span>
+      </button>
+      <button class="action-btn whatsapp-btn" id="whatsappBtn">
+        <span class="btn-icon">💬</span>
+        <span>WhatsApp</span>
+      </button>
+      <button class="action-btn share-btn" id="shareBtn">
+        <span class="btn-icon">🔗</span>
+        <span>Share</span>
+      </button>
+    </div>
+
+    <!-- User Info Card -->
+    <div class="info-card">
+      <div class="info-row">
+        <span class="info-label">Company name:</span>
+        <span class="info-value" id="companyName">-</span>
       </div>
-
-      <!-- Error State -->
-      <div class="error-container" id="errorContainer" style="display: none;">
-        <div class="error-icon">⚠️</div>
-        <h3>Error Loading Profile</h3>
-        <p id="errorMessage">Failed to load user profile. Please try again.</p>
-        <button class="retry-button" onclick="loadUserProfile()">Retry</button>
+      <div class="info-row">
+        <span class="info-label">Email Id:</span>
+        <span class="info-value" id="emailId">-</span>
       </div>
-
-      <!-- Profile Content -->
-      <div class="profile-content" id="profileContent" style="display: none;">
-        <!-- Profile Header Section -->
-        <div class="profile-header-section">
-          <div class="profile-avatar-large">
-            <img id="profileAvatar" src="" alt="Profile Picture" />
-            <div class="verified-badge-large" id="verifiedBadge" style="display: none;">
-              <span class="verify-icon">✓</span>
-              <span>Verified</span>
-            </div>
-          </div>
-          <h1 class="profile-name-large" id="profileName">Loading...</h1>
-          <p class="profile-location" id="profileLocation">Loading...</p>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons-row">
-          <button class="action-btn call-btn" onclick="handleCall()">
-            <span class="btn-icon">📞</span>
-            <span>Call</span>
-          </button>
-          <button class="action-btn whatsapp-btn" onclick="handleWhatsApp()">
-            <span class="btn-icon">💬</span>
-            <span>WhatsApp</span>
-          </button>
-          <button class="action-btn share-btn" onclick="handleShare()">
-            <span class="btn-icon">📤</span>
-            <span>Share</span>
-          </button>
-        </div>
-
-        <!-- Profile Details Card -->
-        <div class="profile-details-card">
-          <h3 class="card-title">Profile Information</h3>
-          <div class="details-list">
-            <div class="detail-item">
-              <span class="detail-icon">🏢</span>
-              <div class="detail-content">
-                <span class="detail-label">Business Name</span>
-                <span class="detail-value" id="businessName">-</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">📝</span>
-              <div class="detail-content">
-                <span class="detail-label">Business Description</span>
-                <span class="detail-value" id="businessDescription">-</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">🚖</span>
-              <div class="detail-content">
-                <span class="detail-label">Trips posted</span>
-                <span class="detail-value" id="tripsPosted">0</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">📅</span>
-              <div class="detail-content">
-                <span class="detail-label">Member Since</span>
-                <span class="detail-value" id="memberSince">-</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">✉️</span>
-              <div class="detail-content">
-                <span class="detail-label">Email</span>
-                <span class="detail-value" id="email">-</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">📞</span>
-              <div class="detail-content">
-                <span class="detail-label">Phone number</span>
-                <span class="detail-value" id="phoneNumber">-</span>
-              </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-icon">📍</span>
-              <div class="detail-content">
-                <span class="detail-label">Address</span>
-                <span class="detail-value" id="address">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- About Section -->
-        <div class="about-section">
-          <h3 class="section-title">About</h3>
-          <div class="about-grid">
-            <div class="about-item">
-              <span class="about-icon">📊</span>
-              <div class="about-content">
-                <span class="about-label">Experience</span>
-                <span class="about-value" id="experience">-</span>
-              </div>
-            </div>
-            <div class="about-item">
-              <span class="about-icon">🎂</span>
-              <div class="about-content">
-                <span class="about-label">Age</span>
-                <span class="about-value" id="age">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Preferred Trips & Routes -->
-        <div class="preferred-section">
-          <div class="section-header">
-            <h3 class="section-title">Preferred Trips and Routes</h3>
-            <a href="#" class="show-details-link" onclick="showPreferredDetails()">Show Details</a>
-          </div>
-          <div class="tags-container" id="preferredTags">
-            <p class="no-data-text">No preferred trips/routes specified</p>
-          </div>
-        </div>
-
-        <!-- Languages Spoken -->
-        <div class="languages-section">
-          <div class="section-header">
-            <h3 class="section-title">Languages Spoken</h3>
-            <a href="#" class="show-details-link" onclick="showLanguagesDetails()">Show Details</a>
-          </div>
-          <div class="languages-content" id="languagesContent">
-            <p class="no-data-text">Languages not specified</p>
-          </div>
-        </div>
-
-        <!-- Available Vehicles -->
-        <div class="vehicles-section">
-          <h3 class="section-title">Available Vehicles</h3>
-          <div class="vehicles-container" id="vehiclesContainer">
-            <p class="no-data-text">No vehicles available</p>
-          </div>
-        </div>
-
-        <!-- Reviews & Ratings Summary -->
-        <div class="reviews-summary-section">
-          <div class="rating-display-large">
-            <span class="rating-number" id="averageRating">0.0</span>
-            <div class="rating-stars" id="ratingStars"></div>
-          </div>
-          <p class="reviews-count" id="reviewsCount">Based on 0 ratings & reviews</p>
-          <button class="view-reviews-btn" onclick="openReviewsPage()">
-            View All Reviews
-          </button>
-        </div>
+      <div class="info-row">
+        <span class="info-label">Booking Cancelled Count:</span>
+        <span class="info-value" id="cancelledCount">0</span>
       </div>
-    </main>
+    </div>
 
-    <!-- Footer Navigation -->
-    <footer class="footer-nav">
-      <nav class="nav-tabs">
-        <button class="nav-tab" data-tab="available" onclick="navigateToTab('available')">
-          <div class="tab-icon">🚖</div>
-          <span class="tab-label">Available</span>
-        </button>
-        <button class="nav-tab" data-tab="features" onclick="navigateToTab('features')">
-          <div class="tab-icon">⭐</div>
-          <span class="tab-label">Features</span>
-        </button>
-        <button class="nav-tab fab-button" onclick="navigateToTab('fab')">
-          <div class="fab-icon nav-fab-icon">+</div>
-        </button>
-        <button class="nav-tab" data-tab="bookings" onclick="navigateToTab('bookings')">
-          <div class="tab-icon">📋</div>
-          <span class="tab-label">Bookings</span>
-        </button>
-        <button class="nav-tab" data-tab="profile" onclick="navigateToTab('profile')">
-          <div class="tab-icon">👤</div>
-          <span class="tab-label">Profile</span>
-        </button>
-      </nav>
-    </footer>
+    <!-- Rating Summary -->
+    <div class="rating-summary-card">
+      <div class="rating-display">
+        <span class="rating-star">⭐</span>
+        <span class="rating-value" id="averageRating">0.0</span>
+      </div>
+      <div class="rating-text" id="ratingText">Based on 0 ratings & reviews</div>
+      <button class="view-reviews-btn" id="viewReviewsBtn">View Reviews & Ratings</button>
+    </div>
 
-    <!-- Scripts -->
-    <script src="../js/services/api.js"></script>
-    <script src="../js/pages/user-profile.js"></script>
-  </body>
+    <!-- Rating Distribution -->
+    <div class="rating-distribution-card" id="ratingDistributionCard" style="display: none;">
+      <h3 class="section-title">Rating Distribution</h3>
+      <div class="distribution-item">
+        <span class="star-label">5 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar5" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent5">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">4 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar4" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent4">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">3 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar3" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent3">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">2 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar2" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent2">0%</span>
+      </div>
+      <div class="distribution-item">
+        <span class="star-label">1 Star</span>
+        <div class="distribution-bar-container">
+          <div class="distribution-bar" id="bar1" style="width: 0%"></div>
+        </div>
+        <span class="distribution-percent" id="percent1">0%</span>
+      </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="about-card">
+      <h3 class="section-title">About</h3>
+      <div class="about-item" id="experienceItem" style="display: none;">
+        <span class="about-label">Experience:</span>
+        <span class="about-value" id="experienceValue">-</span>
+      </div>
+      <div class="about-item" id="ageItem" style="display: none;">
+        <span class="about-label">Age:</span>
+        <span class="about-value" id="ageValue">-</span>
+      </div>
+      <div class="about-description" id="businessDescription" style="display: none;"></div>
+    </div>
+
+    <!-- Preferred Trips and Routes -->
+    <div class="preferred-section" id="preferredTripsSection" style="display: none;">
+      <h3 class="section-title">Preferred Trips and Routes</h3>
+      <div class="chips-container" id="preferredTripsChips"></div>
+      <div class="chips-container" id="preferredRoutesChips"></div>
+    </div>
+
+    <!-- Languages -->
+    <div class="languages-section" id="languagesSection" style="display: none;">
+      <h3 class="section-title">Languages</h3>
+      <div class="chips-container" id="languagesChips"></div>
+    </div>
+
+    <!-- Available Vehicles -->
+    <div class="vehicles-section" id="vehiclesSection" style="display: none;">
+      <h3 class="section-title">Available Vehicles</h3>
+      <div class="vehicles-list" id="vehiclesList"></div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="loadingState">
+      <div class="loading-spinner"></div>
+      <p>Loading profile...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" id="errorState" style="display: none;">
+      <p id="errorMessage">Error loading profile</p>
+    </div>
+  </div>
+
+  <script src="../js/services/api.js"></script>
+  <script src="../js/pages/user-profile.js"></script>
+</body>
 </html>
-
