@@ -67,6 +67,8 @@ class ApiService {
     }
 
     const url = `${API_BASE_URL}${endpoint}`;
+    console.log("🌐 API Request:", url, "Auth required:", requireAuth);
+    
     const config = {
       ...options,
       headers: {
@@ -326,15 +328,16 @@ class ApiService {
   async getPublicProfile(userId) {
     const encodedUserId = encodeURIComponent(userId);
     try {
+      // Try profile public endpoint first
       return await this.request(`/profile/public/${encodedUserId}`, {
         method: "GET",
       }, false); // false = no auth required
     } catch (error) {
-      // Fallback to users endpoint if profile endpoint fails
-      console.warn("Profile endpoint failed, trying users endpoint:", error);
-      return await this.request(`/users/${encodedUserId}`, {
+      // Fallback to users public endpoint if profile endpoint fails
+      console.warn("Profile endpoint failed, trying users public endpoint:", error);
+      return await this.request(`/users/public/${encodedUserId}`, {
         method: "GET",
-      }, false);
+      }, false); // false = no auth required
     }
   }
 

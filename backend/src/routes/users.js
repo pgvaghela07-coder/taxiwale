@@ -7,8 +7,12 @@ const {
   deleteUser,
   searchUsers,
 } = require("../controllers/userController");
+const { getPublicProfile } = require("../controllers/profileController");
 const auth = require("../middleware/auth");
 const roleCheck = require("../middleware/roleCheck");
+
+// Public routes (no auth required) - must be before /:id route
+router.get("/public/:id", getPublicProfile);
 
 // Search route must be BEFORE /:id route to avoid conflicts
 router.get("/search", auth, searchUsers);

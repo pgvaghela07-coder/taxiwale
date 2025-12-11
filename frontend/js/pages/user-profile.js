@@ -20,14 +20,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadUserProfile() {
   try {
     showLoading();
+    console.log("Loading profile for userId:", currentUserId);
 
     // Load profile data
     const profileResponse = await apiService.getPublicProfile(currentUserId);
+    console.log("Profile API Response:", profileResponse);
+
+    if (!profileResponse) {
+      throw new Error("No response from server");
+    }
+
     if (!profileResponse.success) {
       throw new Error(profileResponse.message || "Failed to load profile");
     }
 
     profileData = profileResponse.data;
+    console.log("Profile Data:", profileData);
+
+    if (!profileData) {
+      throw new Error("No profile data received");
+    }
+
     displayProfile(profileData);
 
     // Load vehicles
@@ -36,102 +49,162 @@ async function loadUserProfile() {
     hideLoading();
   } catch (error) {
     console.error("Error loading profile:", error);
-    showError(error.message || "Failed to load profile");
+    hideLoading();
+    showError(error.message || "Failed to load profile. Please check console for details.");
   }
 }
 
 // Display profile data
 function displayProfile(data) {
-  // Cover image
-  const coverImage = document.getElementById("coverImage");
-  if (data.profile?.coverImage) {
-    coverImage.style.backgroundImage = `url(${data.profile.coverImage})`;
-  } else {
-    coverImage.style.backgroundColor = "#e0e0e0";
-  }
+  try {
+    console.log("Displaying profile data:", data);
+    
+    // Cover image
+    const coverImage = document.getElementById("coverImage");
+    if (coverImage) {
+      if (data.profile?.coverImage) {
+        coverImage.style.backgroundImage = `url(${data.profile.coverImage})`;
+      } else {
+        coverImage.style.backgroundColor = "#e0e0e0";
+      }
+    }
 
-  // Profile avatar
-  const avatar = document.getElementById("profileAvatarLarge");
-  if (data.profile?.avatar) {
-    avatar.innerHTML = `<img src="${data.profile.avatar}" alt="${data.name}">`;
-  } else {
-    const firstLetter = (data.name || "U").charAt(0).toUpperCase();
-    avatar.innerHTML = `<div class="avatar-placeholder">${firstLetter}</div>`;
-  }
+    // Profile avatar
+    const avatar = document.getElementById("profileAvatarLarge");
+    if (avatar) {
+      if (data.profile?.avatar) {
+        avatar.innerHTML = `<img src="${data.profile.avatar}" alt="${data.name || ''}">`;
+      } else {
+        const firstLetter = (data.name || "U").charAt(0).toUpperCase();
+        avatar.innerHTML = `<div class="avatar-placeholder">${firstLetter}</div>`;
+      }
+    }
 
-  // Name and location
-  document.getElementById("profileName").textContent = data.name || "Unknown User";
-  const locationInfo = document.getElementById("locationInfo");
-  if (data.profile?.city || data.profile?.state) {
-    locationInfo.textContent = `${data.profile.city || ""}${data.profile.city && data.profile.state ? ", " : ""}${data.profile.state || ""}`;
-  }
+    // Name and location
+    const nameEl = document.getElementById("profileName");
+    if (nameEl) {
+      nameEl.textContent = data.name || "Unknown User";
+    }
+    
+    const locationInfo = document.getElementById("locationInfo");
+    if (locationInfo) {
+      if (data.profile?.city || data.profile?.state) {
+        locationInfo.textContent = `${data.profile.city || ""}${data.profile.city && data.profile.state ? ", " : ""}${data.profile.state || ""}`;
+      } else {
+        locationInfo.textContent = "";
+      }
+    }
 
-  // Verified badge
-  const verifiedBadge = document.getElementById("verifiedBadge");
-  if (data.isVerified) {
-    verifiedBadge.innerHTML = '<span class="verified-badge">✓ Verified</span>';
-  }
+    // Verified badge
+    const verifiedBadge = document.getElementById("verifiedBadge");
+    if (verifiedBadge) {
+      if (data.isVerified) {
+        verifiedBadge.innerHTML = '<span class="verified-badge">✓ Verified</span>';
+      } else {
+        verifiedBadge.innerHTML = "";
+      }
+    }
 
-  // User info card
-  document.getElementById("companyName").textContent = data.businessName || "-";
-  document.getElementById("emailId").textContent = data.email || "-";
-  document.getElementById("cancelledCount").textContent = data.bookingCancelledCount || 0;
+    // User info card
+    const companyNameEl = document.getElementById("companyName");
+    if (companyNameEl) {
+      companyNameEl.textContent = data.businessName || "-";
+    }
+    
+    const emailIdEl = document.getElementById("emailId");
+    if (emailIdEl) {
+      emailIdEl.textContent = data.email || "-";
+    }
+    
+    const cancelledCountEl = document.getElementById("cancelledCount");
+    if (cancelledCountEl) {
+      cancelledCountEl.textContent = data.bookingCancelledCount || 0;
+    }
 
-  // Rating summary
-  const avgRating = data.rating?.average || 0;
-  const totalReviews = data.rating?.totalReviews || 0;
-  document.getElementById("averageRating").textContent = avgRating.toFixed(1);
-  document.getElementById("ratingText").textContent = `Based on ${totalReviews} rating${totalReviews !== 1 ? "s" : ""} & review${totalReviews !== 1 ? "s" : ""}`;
+    // Rating summary
+    const avgRating = data.rating?.average || 0;
+    const totalReviews = data.rating?.totalReviews || 0;
+    
+    const avgRatingEl = document.getElementById("averageRating");
+    if (avgRatingEl) {
+      avgRatingEl.textContent = avgRating.toFixed(1);
+    }
+    
+    const ratingTextEl = document.getElementById("ratingText");
+    if (ratingTextEl) {
+      ratingTextEl.textContent = `Based on ${totalReviews} rating${totalReviews !== 1 ? "s" : ""} & review${totalReviews !== 1 ? "s" : ""}`;
+    }
 
-  // Rating distribution
-  if (totalReviews > 0 && data.rating?.percentages) {
-    displayRatingDistribution(data.rating.percentages);
-  }
+    // Rating distribution
+    if (totalReviews > 0 && data.rating?.percentages) {
+      displayRatingDistribution(data.rating.percentages);
+    }
 
-  // About section
-  if (data.profile?.experience) {
-    document.getElementById("experienceItem").style.display = "flex";
-    document.getElementById("experienceValue").textContent = `${data.profile.experience} year${data.profile.experience !== 1 ? "s" : ""}`;
-  }
+    // About section
+    const experienceItem = document.getElementById("experienceItem");
+    if (experienceItem && data.profile?.experience) {
+      experienceItem.style.display = "flex";
+      const experienceValue = document.getElementById("experienceValue");
+      if (experienceValue) {
+        experienceValue.textContent = `${data.profile.experience} year${data.profile.experience !== 1 ? "s" : ""}`;
+      }
+    }
 
-  if (data.age) {
-    document.getElementById("ageItem").style.display = "flex";
-    document.getElementById("ageValue").textContent = `${data.age} yr`;
-  }
+    const ageItem = document.getElementById("ageItem");
+    if (ageItem && data.age) {
+      ageItem.style.display = "flex";
+      const ageValue = document.getElementById("ageValue");
+      if (ageValue) {
+        ageValue.textContent = `${data.age} yr`;
+      }
+    }
 
-  if (data.profile?.businessDescription) {
-    const descEl = document.getElementById("businessDescription");
-    descEl.style.display = "block";
-    descEl.textContent = data.profile.businessDescription;
-  }
+    if (data.profile?.businessDescription) {
+      const descEl = document.getElementById("businessDescription");
+      if (descEl) {
+        descEl.style.display = "block";
+        descEl.textContent = data.profile.businessDescription;
+      }
+    }
 
-  // Preferred trips
-  if (data.profile?.preferredTrips && data.profile.preferredTrips.length > 0) {
-    document.getElementById("preferredTripsSection").style.display = "block";
-    const chipsContainer = document.getElementById("preferredTripsChips");
-    chipsContainer.innerHTML = data.profile.preferredTrips
-      .map(
-        (trip) =>
-          `<span class="chip">${formatTripType(trip)}</span>`
-      )
-      .join("");
-  }
+    // Preferred trips
+    const preferredTripsSection = document.getElementById("preferredTripsSection");
+    if (preferredTripsSection && data.profile?.preferredTrips && data.profile.preferredTrips.length > 0) {
+      preferredTripsSection.style.display = "block";
+      const chipsContainer = document.getElementById("preferredTripsChips");
+      if (chipsContainer) {
+        chipsContainer.innerHTML = data.profile.preferredTrips
+          .map((trip) => `<span class="chip">${formatTripType(trip)}</span>`)
+          .join("");
+      }
+    }
 
-  // Preferred routes
-  if (data.profile?.preferredRoutes && data.profile.preferredRoutes.length > 0) {
-    const routesContainer = document.getElementById("preferredRoutesChips");
-    routesContainer.innerHTML = data.profile.preferredRoutes
-      .map((route) => `<span class="chip">${route}</span>`)
-      .join("");
-  }
+    // Preferred routes
+    if (data.profile?.preferredRoutes && data.profile.preferredRoutes.length > 0) {
+      const routesContainer = document.getElementById("preferredRoutesChips");
+      if (routesContainer) {
+        routesContainer.innerHTML = data.profile.preferredRoutes
+          .map((route) => `<span class="chip">${route}</span>`)
+          .join("");
+      }
+    }
 
-  // Languages
-  if (data.profile?.languages && data.profile.languages.length > 0) {
-    document.getElementById("languagesSection").style.display = "block";
-    const languagesContainer = document.getElementById("languagesChips");
-    languagesContainer.innerHTML = data.profile.languages
-      .map((lang) => `<span class="chip">${lang}</span>`)
-      .join("");
+    // Languages
+    const languagesSection = document.getElementById("languagesSection");
+    if (languagesSection && data.profile?.languages && data.profile.languages.length > 0) {
+      languagesSection.style.display = "block";
+      const languagesContainer = document.getElementById("languagesChips");
+      if (languagesContainer) {
+        languagesContainer.innerHTML = data.profile.languages
+          .map((lang) => `<span class="chip">${lang}</span>`)
+          .join("");
+      }
+    }
+    
+    console.log("✅ Profile display completed");
+  } catch (error) {
+    console.error("❌ Error in displayProfile:", error);
+    throw error;
   }
 }
 
@@ -250,19 +323,42 @@ function setupEventListeners() {
 
 // Show loading state
 function showLoading() {
-  document.getElementById("loadingState").style.display = "flex";
-  document.getElementById("errorState").style.display = "none";
+  const loadingState = document.getElementById("loadingState");
+  const errorState = document.getElementById("errorState");
+  if (loadingState) loadingState.style.display = "flex";
+  if (errorState) errorState.style.display = "none";
+  
+  // Hide content sections while loading
+  const contentSections = document.querySelectorAll('.profile-header-section, .action-buttons, .info-card, .rating-summary-card, .rating-distribution-card, .about-card, .preferred-section, .languages-section, .vehicles-section');
+  contentSections.forEach(section => {
+    if (section) section.style.display = 'none';
+  });
 }
 
 // Hide loading state
 function hideLoading() {
-  document.getElementById("loadingState").style.display = "none";
+  const loadingState = document.getElementById("loadingState");
+  if (loadingState) loadingState.style.display = "none";
+  
+  // Show content sections after loading
+  const contentSections = document.querySelectorAll('.profile-header-section, .action-buttons, .info-card, .rating-summary-card, .about-card');
+  contentSections.forEach(section => {
+    if (section) section.style.display = '';
+  });
 }
 
 // Show error state
 function showError(message) {
-  document.getElementById("loadingState").style.display = "none";
-  document.getElementById("errorState").style.display = "block";
-  document.getElementById("errorMessage").textContent = message;
+  const loadingState = document.getElementById("loadingState");
+  const errorState = document.getElementById("errorState");
+  const errorMessage = document.getElementById("errorMessage");
+  
+  if (loadingState) loadingState.style.display = "none";
+  if (errorState) {
+    errorState.style.display = "block";
+    if (errorMessage) errorMessage.textContent = message;
+  }
+  
+  console.error("Profile Error:", message);
 }
 
