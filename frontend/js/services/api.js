@@ -57,11 +57,12 @@ class ApiService {
     return localStorage.getItem("token");
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint, options = {}, requireAuth = true) {
     // Get fresh token on each request
     const token = this.getToken();
 
-    if (!token && !endpoint.includes("/auth/")) {
+    // Check auth requirement - allow public endpoints
+    if (requireAuth && !token && !endpoint.includes("/auth/") && !endpoint.includes("/public/") && !endpoint.includes("/reviews/") && !endpoint.includes("/vehicles/user/")) {
       throw new Error("No token, authorization denied. Please login first.");
     }
 
@@ -70,7 +71,7 @@ class ApiService {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(token && requireAuth && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
     };
@@ -319,6 +320,60 @@ class ApiService {
 
   async getProfileQR() {
     return this.request("/profile/qr");
+  }
+
+  // Public profile (no auth required)
+  async getPublicProfile(userId) {
+    const encodedUserId = encodeURIComponent(userId);
+    try {
+      // Try profile public endpoint first
+      const endpoint = `/profile/public/${encodedUserId}`;
+      return await this.request(endpoint, {
+        method: "GET",
+      }, false); // false = no auth required
+    } catch (error) {
+      // Fallback to users public endpoint if profile endpoint fails
+      console.warn("Profile endpoint failed, trying users public endpoint:", error);
+      const fallbackEndpoint = `/users/public/${encodedUserId}`;
+      return await this.request(fallbackEndpoint, {
+        method: "GET",
+      }, false); // false = no auth required
+    }
+  }
+
+  // Review methods
+  async getUserReviews(userId, page = 1, limit = 10) {
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(
+      `/reviews/${encodedUserId}/reviews?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+      },
+      false // Public endpoint, no auth required
+    );
+  }
+
+  async createReview(userId, reviewData) {
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(`/reviews/${encodedUserId}/review`, {
+      method: "POST",
+      body: JSON.stringify(reviewData),
+    });
+  }
+
+  async getRatingSummary(userId) {
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(`/reviews/${encodedUserId}/rating-summary`, {
+      method: "GET",
+    }, false); // Public endpoint, no auth required
+  }
+
+  // Vehicle methods
+  async getUserVehicles(userId) {
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(`/vehicles/user/${encodedUserId}`, {
+      method: "GET",
+    }, false); // Public endpoint, no auth required
   }
 
   // User search for assignment

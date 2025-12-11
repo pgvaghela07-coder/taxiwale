@@ -229,3 +229,70 @@ exports.generateQR = async (req, res) => {
     });
   }
 };
+
+// @desc    Get public profile
+// @route   GET /api/profile/public/:userId
+// @route   GET /api/users/public/:id
+// @access  Public
+exports.getPublicProfile = async (req, res) => {
+  try {
+    // Handle both :userId (from profile route) and :id (from users route)
+    const userId = req.params.userId || req.params.id;
+    
+    // Validate userId is present
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // Find user by _id or userId field
+    let user = null;
+    const mongoose = require('mongoose');
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(userId);
+
+    if (isValidObjectId) {
+      user = await User.findById(userId);
+    }
+
+    if (!user) {
+      user = await User.findOne({ userId: userId });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Return public profile data (exclude sensitive info)
+    res.json({
+      success: true,
+      data: {
+        _id: user._id,
+        userId: user.userId,
+        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        businessName: user.businessName,
+        mobile: user.mobile,
+        email: user.email,
+        dob: user.dob,
+        profile: user.profile,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Get Public Profile Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch profile",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};

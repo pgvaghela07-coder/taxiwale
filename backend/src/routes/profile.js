@@ -6,9 +6,14 @@ const {
   getWallet,
   addWalletTransaction,
   generateQR,
+  getPublicProfile,
 } = require("../controllers/profileController");
 const auth = require("../middleware/auth");
 
+// Public routes (no auth required) - MUST be before protected routes
+router.get("/public/:userId", getPublicProfile);
+
+// Protected routes (auth required)
 router.get("/", auth, getProfile);
 router.put("/", auth, updateProfile);
 router.put("/update", auth, updateProfile); // Alias for compatibility
