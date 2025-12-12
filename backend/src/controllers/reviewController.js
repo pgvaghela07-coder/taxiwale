@@ -213,32 +213,51 @@ exports.getRatingSummary = async (req, res) => {
 
 // Helper function to calculate Partner Score
 function calculatePartnerScore(distribution, totalRatings) {
-  // Weighted scoring system (similar to CIBIL)
-  // Higher ratings get more weight
-  const weights = {
-    5: 0.40,  // 40% weight for 5-star
-    4: 0.30,  // 30% weight for 4-star
-    3: 0.15,  // 15% weight for 3-star
-    2: 0.10,  // 10% weight for 2-star
-    1: 0.05,  // 5% weight for 1-star
+  // Calculate percentage of each rating
+  const percentages = {
+    5: ((distribution[5] || 0) / totalRatings) * 100,
+    4: ((distribution[4] || 0) / totalRatings) * 100,
+    3: ((distribution[3] || 0) / totalRatings) * 100,
+    2: ((distribution[2] || 0) / totalRatings) * 100,
+    1: ((distribution[1] || 0) / totalRatings) * 100,
   };
 
-  // Calculate weighted average
-  let weightedSum = 0;
-  for (let rating = 1; rating <= 5; rating++) {
-    const count = distribution[rating] || 0;
-    const percentage = (count / totalRatings) * 100;
-    weightedSum += percentage * weights[rating] * rating;
-  }
-
-  // Normalize to CIBIL-like scale (300-900)
-  // Base score: 300
-  // Maximum possible: 900
-  // Formula: 300 + (weightedSum * 150) where weightedSum max is 4 (if all 5-star)
-  const normalizedScore = 300 + (weightedSum * 150);
+  // Score calculation based on rating distribution
+  // Higher weight to positive ratings (5-star, 4-star)
+  // Lower weight to negative ratings (1-star, 2-star)
+  // Formula: 
+  // - Base score: 300
+  // - 5-star ratings contribute: percentage * 6 (max 600 points if 100% 5-star)
+  // - 4-star ratings contribute: percentage * 3 (max 300 points if 100% 4-star)
+  // - 3-star ratings contribute: percentage * 1 (max 100 points if 100% 3-star)
+  // - 2-star ratings contribute: percentage * 0.5 (max 50 points if 100% 2-star)
+  // - 1-star ratings contribute: percentage * 0 (no points, only penalty)
   
-  // Ensure score is within bounds
-  const partnerScore = Math.min(900, Math.max(300, Math.round(normalizedScore)));
+  let score = 300; // Base score
+  
+  // Add points for positive ratings
+  score += percentages[5] * 6;  // 5-star: 0-600 points
+  score += percentages[4] * 3;  // 4-star: 0-300 points
+  score += percentages[3] * 1;   // 3-star: 0-100 points
+  score += percentages[2] * 0.5; // 2-star: 0-50 points
+  // 1-star gives 0 points (already accounted in base)
+  
+  // Penalty for negative ratings (1-star and 2-star reduce score)
+  // If more than 20% are 1-star, apply penalty
+  if (percentages[1] > 20) {
+    const excessNegative = percentages[1] - 20;
+    score -= excessNegative * 2; // Penalty for excessive 1-star ratings
+  }
+  
+  // If more than 30% are 2-star or below, apply penalty
+  const lowRatings = percentages[1] + percentages[2];
+  if (lowRatings > 30) {
+    const excessLow = lowRatings - 30;
+    score -= excessLow * 1; // Penalty for excessive low ratings
+  }
+  
+  // Ensure score is within bounds (300-900)
+  const partnerScore = Math.min(900, Math.max(300, Math.round(score)));
 
   return partnerScore;
 }
