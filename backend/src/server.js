@@ -28,8 +28,8 @@ const allowedOrigins = [
   "https://taxiwale.onrender.com",
   "https://taxiwalepartners.com", // Backend domain
   "https://www.taxiwalepartners.com", // Backend domain with www
-  "https://ranaak.com", // Your frontend added
-  "https://ranaak.com/frontend/pages", // In case routing needs it
+  "https://www.taxiwalepartners.com", // Your frontend added
+  "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
 ];
 
 if (process.env.FRONTEND_URL) {
