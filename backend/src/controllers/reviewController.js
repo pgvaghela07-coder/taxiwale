@@ -211,6 +211,134 @@ exports.getRatingSummary = async (req, res) => {
   }
 };
 
+// Helper function to calculate Partner Score
+function calculatePartnerScore(distribution, totalRatings) {
+  // Weighted scoring system (similar to CIBIL)
+  // Higher ratings get more weight
+  const weights = {
+    5: 0.40,  // 40% weight for 5-star
+    4: 0.30,  // 30% weight for 4-star
+    3: 0.15,  // 15% weight for 3-star
+    2: 0.10,  // 10% weight for 2-star
+    1: 0.05,  // 5% weight for 1-star
+  };
+
+  // Calculate weighted average
+  let weightedSum = 0;
+  for (let rating = 1; rating <= 5; rating++) {
+    const count = distribution[rating] || 0;
+    const percentage = (count / totalRatings) * 100;
+    weightedSum += percentage * weights[rating] * rating;
+  }
+
+  // Normalize to CIBIL-like scale (300-900)
+  // Base score: 300
+  // Maximum possible: 900
+  // Formula: 300 + (weightedSum * 150) where weightedSum max is 4 (if all 5-star)
+  const normalizedScore = 300 + (weightedSum * 150);
+  
+  // Ensure score is within bounds
+  const partnerScore = Math.min(900, Math.max(300, Math.round(normalizedScore)));
+
+  return partnerScore;
+}
+
+// Helper function to categorize score
+function getScoreCategory(score) {
+  if (score >= 750) return "Excellent";
+  if (score >= 650) return "Good";
+  if (score >= 550) return "Fair";
+  if (score >= 450) return "Poor";
+  return "Very Poor";
+}
+
+// @desc    Get partner score
+// @route   GET /api/reviews/:userId/partner-score
+// @access  Public
+exports.getPartnerScore = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find user
+    let user = await User.findById(userId);
+    if (!user) {
+      user = await User.findOne({ userId: userId });
+    }
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const reviews = await Review.find({
+      reviewedUserId: user._id,
+      isVisible: true,
+    });
+
+    const totalRatings = reviews.length;
+    
+    // If less than 50 ratings, return warning
+    if (totalRatings < 50) {
+      return res.json({
+        success: true,
+        data: {
+          hasMinimumRatings: false,
+          totalRatings,
+          partnerScore: null,
+          scoreCategory: null,
+          warning: {
+            message: "This profile has less than 50 ratings. We do not guarantee reliability for advance payments. Please get references before making advance payments.",
+            showWarning: true
+          }
+        },
+      });
+    }
+
+    // Calculate rating distribution
+    const ratingDistribution = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    reviews.forEach(review => {
+      ratingDistribution[review.rating] = (ratingDistribution[review.rating] || 0) + 1;
+    });
+
+    // Calculate Partner Score (similar to CIBIL: 300-900 range)
+    const partnerScore = calculatePartnerScore(ratingDistribution, totalRatings);
+
+    // Determine score category
+    const scoreCategory = getScoreCategory(partnerScore);
+
+    res.json({
+      success: true,
+      data: {
+        hasMinimumRatings: true,
+        totalRatings,
+        partnerScore,
+        scoreCategory,
+        ratingDistribution,
+        warning: {
+          message: null,
+          showWarning: false
+        }
+      },
+    });
+  } catch (error) {
+    console.error("Get Partner Score Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to calculate partner score",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+
 
 
 

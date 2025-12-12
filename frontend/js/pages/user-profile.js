@@ -4,6 +4,8 @@ let profileData = null;
 let currentPage = 1;
 let totalPages = 1;
 const reviewsPerPage = 10;
+let allReviews = []; // Store all reviews
+let showAllReviews = false; // Track if all reviews are shown
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", async () => {
@@ -50,6 +52,7 @@ async function loadUserProfile() {
     await Promise.all([
       loadUserVehicles(),
       loadRatingSummary(),
+      loadPartnerScore(),
     ]);
 
     // Load reviews (don't wait for it, let it load in background)
@@ -306,6 +309,64 @@ function displayRatingSummary(data) {
   }
 }
 
+// Load partner score
+async function loadPartnerScore() {
+  try {
+    const response = await apiService.getPartnerScore(currentUserId);
+    if (response && response.success && response.data) {
+      displayPartnerScore(response.data);
+    }
+  } catch (error) {
+    console.error("Error loading partner score:", error);
+  }
+}
+
+// Display partner score
+function displayPartnerScore(data) {
+  const partnerScoreCard = document.getElementById("partnerScoreCard");
+  const warningCard = document.getElementById("warningCard");
+  const warningMessage = document.getElementById("warningMessage");
+
+  if (!data.hasMinimumRatings) {
+    // Show warning for < 50 ratings
+    if (warningCard) {
+      warningCard.style.display = "flex";
+      if (warningMessage) {
+        warningMessage.textContent = data.warning.message;
+      }
+    }
+    if (partnerScoreCard) {
+      partnerScoreCard.style.display = "none";
+    }
+  } else {
+    // Show partner score for 50+ ratings
+    if (warningCard) {
+      warningCard.style.display = "none";
+    }
+    if (partnerScoreCard) {
+      partnerScoreCard.style.display = "block";
+      
+      const scoreValue = document.getElementById("partnerScoreValue");
+      const scoreCategory = document.getElementById("partnerScoreCategory");
+      const scoreDescription = document.getElementById("partnerScoreDescription");
+      
+      if (scoreValue) {
+        scoreValue.textContent = data.partnerScore;
+      }
+      
+      if (scoreCategory) {
+        scoreCategory.textContent = data.scoreCategory;
+        // Add category class for styling
+        scoreCategory.className = `score-category category-${data.scoreCategory.toLowerCase().replace(' ', '-')}`;
+      }
+      
+      if (scoreDescription) {
+        scoreDescription.textContent = `Based on ${data.totalRatings} ratings. Score range: 300-900 (similar to CIBIL score).`;
+      }
+    }
+  }
+}
+
 // Load reviews
 async function loadReviews(page) {
   try {
@@ -327,6 +388,10 @@ async function loadReviews(page) {
 
     currentPage = pagination.page || page;
     totalPages = pagination.pages || 1;
+
+    // Store all reviews
+    allReviews = reviews;
+    showAllReviews = false; // Reset to show only 2 initially
 
     displayReviews(reviews);
     updatePagination();
@@ -362,7 +427,11 @@ function displayReviews(reviews) {
     return;
   }
 
-  reviewsList.innerHTML = reviews
+  // Determine which reviews to show
+  const reviewsToShow = showAllReviews ? reviews : reviews.slice(0, 2);
+  const hasMoreReviews = reviews.length > 2;
+
+  const reviewsHTML = reviewsToShow
     .map((review) => {
       const reviewer = review.reviewerUserId || {};
       const reviewerName = reviewer.name || "Anonymous";
@@ -408,7 +477,40 @@ function displayReviews(reviews) {
       `;
     })
     .join("");
+
+  // Add Read More button if there are more reviews
+  let readMoreButton = "";
+  if (hasMoreReviews) {
+    if (!showAllReviews) {
+      readMoreButton = `
+        <div class="read-more-container" style="text-align: center; margin-top: 20px;">
+          <button class="read-more-btn" id="readMoreBtn" onclick="toggleAllReviews()">
+            Read More (${reviews.length - 2} more reviews)
+          </button>
+        </div>
+      `;
+    } else {
+      readMoreButton = `
+        <div class="read-more-container" style="text-align: center; margin-top: 20px;">
+          <button class="read-more-btn" id="readMoreBtn" onclick="toggleAllReviews()">
+            Show Less
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  reviewsList.innerHTML = reviewsHTML + readMoreButton;
 }
+
+// Toggle between showing 2 reviews and all reviews
+function toggleAllReviews() {
+  showAllReviews = !showAllReviews;
+  displayReviews(allReviews);
+}
+
+// Make function globally accessible
+window.toggleAllReviews = toggleAllReviews;
 
 // Update pagination
 function updatePagination() {
@@ -484,8 +586,34 @@ function showReviewsError(message) {
   }
 }
 
+// Handle back button click
+function handleBackButton() {
+  try {
+    // Check if we have a referrer from the same origin
+    const referrer = document.referrer;
+    
+    // If we have a referrer from the same site, use browser back
+    if (referrer && referrer.includes(window.location.origin)) {
+      window.history.back();
+    } else {
+      // No referrer or external referrer, go to index page (main dashboard)
+      window.location.href = "index.html";
+    }
+  } catch (error) {
+    console.error("Error handling back button:", error);
+    // Fallback to index page on any error
+    window.location.href = "index.html";
+  }
+}
+
 // Setup event listeners
 function setupEventListeners() {
+  // Back button
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.onclick = handleBackButton;
+  }
+
   // Pagination buttons
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");

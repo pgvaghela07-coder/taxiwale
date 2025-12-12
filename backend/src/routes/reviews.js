@@ -4,17 +4,20 @@ const {
   getUserReviews,
   createReview,
   getRatingSummary,
+  getPartnerScore,
 } = require("../controllers/reviewController");
 const auth = require("../middleware/auth");
 
 // Public routes (no auth required)
 router.get("/:userId/reviews", getUserReviews);
 router.get("/:userId/rating-summary", getRatingSummary);
+router.get("/:userId/partner-score", getPartnerScore);
 
 // Protected routes (auth required)
 router.post("/:userId/review", auth, createReview);
 
 module.exports = router;
+
 
 
 

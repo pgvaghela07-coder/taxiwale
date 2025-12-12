@@ -26,7 +26,7 @@
 
   <div class="profile-page">
     <!-- Back Button -->
-    <button class="back-btn" onclick="window.history.back()">← Back</button>
+    <button class="back-btn" id="backBtn">← Back</button>
 
     <!-- Profile Header with Cover Image -->
     <div class="profile-header-section">
@@ -83,6 +83,25 @@
       </div>
       <div class="rating-text" id="ratingText">Based on 0 ratings & reviews</div>
       <button class="write-review-btn" id="writeReviewBtn">Write a Review</button>
+    </div>
+
+    <!-- Partner Score Section -->
+    <div class="partner-score-card" id="partnerScoreCard" style="display: none;">
+      <h3 class="section-title">Partner Score</h3>
+      <div class="partner-score-display" id="partnerScoreDisplay">
+        <div class="score-value" id="partnerScoreValue">-</div>
+        <div class="score-category" id="partnerScoreCategory">-</div>
+        <div class="score-description" id="partnerScoreDescription"></div>
+      </div>
+    </div>
+
+    <!-- Warning Card (for < 50 ratings) -->
+    <div class="warning-card" id="warningCard" style="display: none;">
+      <div class="warning-icon">⚠️</div>
+      <div class="warning-content">
+        <h3 class="warning-title">Limited Rating Information</h3>
+        <p class="warning-message" id="warningMessage"></p>
+      </div>
     </div>
 
     <!-- Rating Distribution -->

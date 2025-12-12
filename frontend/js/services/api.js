@@ -368,6 +368,13 @@ class ApiService {
     }, false); // Public endpoint, no auth required
   }
 
+  async getPartnerScore(userId) {
+    const encodedUserId = encodeURIComponent(userId);
+    return this.request(`/reviews/${encodedUserId}/partner-score`, {
+      method: "GET",
+    }, false); // Public endpoint, no auth required
+  }
+
   // Vehicle methods
   async getUserVehicles(userId) {
     const encodedUserId = encodeURIComponent(userId);

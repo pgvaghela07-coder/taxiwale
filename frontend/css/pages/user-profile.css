@@ -794,6 +794,135 @@
   transform: scale(0.98);
 }
 
+/* Read More Button */
+.read-more-container {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.read-more-btn {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: var(--transition-default);
+  box-shadow: 0 4px 15px var(--shadow-gold);
+}
+
+.read-more-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px var(--shadow-gold);
+}
+
+.read-more-btn:active {
+  transform: scale(0.98);
+}
+
+/* Partner Score Card */
+.partner-score-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 179, 0, 0.1);
+}
+
+.partner-score-display {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.score-value {
+  font-size: 64px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.score-category {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-category.category-excellent {
+  color: #10b981; /* Green */
+}
+
+.score-category.category-good {
+  color: #3b82f6; /* Blue */
+}
+
+.score-category.category-fair {
+  color: #f59e0b; /* Yellow */
+}
+
+.score-category.category-poor {
+  color: #ef4444; /* Red */
+}
+
+.score-category.category-very-poor {
+  color: #dc2626; /* Dark Red */
+}
+
+.score-description {
+  font-size: 14px;
+  color: var(--color-silver);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* Warning Card */
+.warning-card {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.warning-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ef4444;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.warning-message {
+  font-size: 14px;
+  color: var(--color-silver);
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Pagination */
 .pagination {
   display: flex;
