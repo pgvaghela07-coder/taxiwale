@@ -13,7 +13,7 @@
 .profile-page {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   background: var(--color-charcoal);
   min-height: 100vh;
   font-family: 'Poppins', 'Inter', sans-serif;
@@ -46,14 +46,14 @@
 
 /* Back Button */
 .back-btn {
-  margin-bottom: 20px;
-  padding: 12px 24px;
+  margin-bottom: 10px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   color: var(--color-white);
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   transition: var(--transition-default);
@@ -72,16 +72,16 @@
 /* Profile Header Section */
 .profile-header-section {
   position: relative;
-  margin-bottom: 20px;
-  border-radius: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
-  border: 2px solid rgba(255, 179, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
+  border: 1px solid rgba(255, 179, 0, 0.2);
 }
 
 .cover-image {
   width: 100%;
-  height: 200px;
+  height: 100px;
   background-size: cover;
   background-position: center;
   background-color: rgba(255, 179, 0, 0.1);
@@ -101,20 +101,20 @@
 .profile-header-content {
   position: relative;
   background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.95));
-  padding: 20px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  border-top: 2px solid rgba(255, 179, 0, 0.2);
+  gap: 12px;
+  border-top: 1px solid rgba(255, 179, 0, 0.2);
 }
 
 .profile-avatar-large {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid var(--color-gold);
-  margin-top: -50px;
+  border: 3px solid var(--color-gold);
+  margin-top: -35px;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   display: flex;
   align-items: center;
@@ -130,7 +130,7 @@
 }
 
 .avatar-placeholder {
-  font-size: 40px;
+  font-size: 28px;
   color: var(--color-white);
   font-weight: 700;
 }
@@ -140,10 +140,10 @@
 }
 
 .profile-name {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--color-white);
-  margin: 0 0 5px 0;
+  margin: 0 0 3px 0;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   -webkit-background-clip: text;
   background-clip: text;
@@ -152,8 +152,8 @@
 
 .location-info {
   color: var(--color-silver);
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: 12px;
+  margin-bottom: 4px;
 }
 
 .verified-badge-container {
@@ -174,25 +174,25 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .action-btn {
   flex: 1;
-  padding: 12px 20px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   transition: var(--transition-default);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .call-btn {
@@ -235,17 +235,17 @@
 /* Info Card */
 .info-card {
   background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.95));
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
-  border: 2px solid rgba(255, 179, 0, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
+  border: 1px solid rgba(255, 179, 0, 0.2);
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -255,23 +255,23 @@
 
 .info-label {
   color: var(--color-silver);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .info-value {
   color: var(--color-white);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 /* Rating Summary Card */
 .rating-summary-card {
   background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.95));
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
-  border: 2px solid rgba(255, 179, 0, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 179, 0, 0.1);
+  border: 1px solid rgba(255, 179, 0, 0.2);
   text-align: center;
 }
 
@@ -279,16 +279,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .rating-star {
-  font-size: 32px;
+  font-size: 24px;
 }
 
 .rating-value {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   -webkit-background-clip: text;
@@ -298,23 +298,23 @@
 
 .rating-text {
   color: var(--color-silver);
-  font-size: 14px;
-  margin-bottom: 15px;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .write-review-btn {
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   color: var(--color-white);
   border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: var(--transition-default);
-  box-shadow: 0 4px 15px var(--shadow-gold);
-  margin-top: 15px;
+  box-shadow: 0 2px 8px var(--shadow-gold);
+  margin-top: 8px;
   width: 100%;
 }
 
@@ -338,10 +338,10 @@
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-white);
-  margin-bottom: 15px;
+  margin-bottom: 8px;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   -webkit-background-clip: text;
   background-clip: text;
@@ -827,36 +827,36 @@
 /* Partner Score Card */
 .partner-score-card {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
   border: 1px solid rgba(255, 179, 0, 0.3);
-  box-shadow: 0 4px 20px rgba(255, 179, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(255, 179, 0, 0.1);
 }
 
 .partner-score-display {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .score-value {
-  font-size: 64px;
+  font-size: 40px;
   font-weight: 700;
   background: linear-gradient(135deg, var(--color-gold), var(--color-orange));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   line-height: 1;
 }
 
 .score-category {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-white);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .score-category.category-excellent {
@@ -880,26 +880,26 @@
 }
 
 .score-description {
-  font-size: 14px;
+  font-size: 11px;
   color: var(--color-silver);
-  margin-top: 8px;
-  line-height: 1.5;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 /* Warning Card */
 .warning-card {
   background: rgba(239, 68, 68, 0.1);
-  border: 2px solid rgba(239, 68, 68, 0.3);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 10px;
 }
 
 .warning-icon {
-  font-size: 32px;
+  font-size: 24px;
   flex-shrink: 0;
   line-height: 1;
 }
@@ -909,17 +909,17 @@
 }
 
 .warning-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #ef4444;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   margin-top: 0;
 }
 
 .warning-message {
-  font-size: 14px;
+  font-size: 11px;
   color: var(--color-silver);
-  line-height: 1.6;
+  line-height: 1.4;
   margin: 0;
 }
 
