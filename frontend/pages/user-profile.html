@@ -9,8 +9,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
 </head>
 <body>
+  <!-- Header Strip -->
+  <div class="header-strip">
+    <div class="strip-gradient"></div>
+  </div>
+
   <div class="profile-page">
     <!-- Back Button -->
     <button class="back-btn" onclick="window.history.back()">← Back</button>
@@ -69,7 +82,6 @@
         <span class="rating-value" id="averageRating">0.0</span>
       </div>
       <div class="rating-text" id="ratingText">Based on 0 ratings & reviews</div>
-      <button class="view-reviews-btn" id="viewReviewsBtn">View Reviews & Ratings</button>
     </div>
 
     <!-- Rating Distribution -->
@@ -143,6 +155,23 @@
     <div class="vehicles-section" id="vehiclesSection" style="display: none;">
       <h3 class="section-title">Available Vehicles</h3>
       <div class="vehicles-list" id="vehiclesList"></div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section" id="reviewsSection">
+      <h3 class="section-title">Reviews & Ratings</h3>
+      <div class="reviews-list" id="reviewsList">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading reviews...</p>
+        </div>
+      </div>
+      <!-- Pagination -->
+      <div class="pagination" id="pagination" style="display: none;">
+        <button class="pagination-btn" id="prevBtn">Previous</button>
+        <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+        <button class="pagination-btn" id="nextBtn">Next</button>
+      </div>
     </div>
 
     <!-- Loading State -->

@@ -85,6 +85,7 @@ app.use("/api/vehicles", require("./routes/vehicles"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/verification", require("./routes/verification"));
 app.use("/api/chat", require("./routes/chat"));
+app.use("/api/reviews", require("./routes/reviews"));
 
 // Health
 app.get("/health", (req, res) => {

@@ -1,6 +1,9 @@
 // User Profile Page JavaScript
 let currentUserId = null;
 let profileData = null;
+let currentPage = 1;
+let totalPages = 1;
+const reviewsPerPage = 10;
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", async () => {
@@ -48,6 +51,12 @@ async function loadUserProfile() {
       loadUserVehicles(),
       loadRatingSummary(),
     ]);
+
+    // Load reviews (don't wait for it, let it load in background)
+    loadReviews(1).catch(error => {
+      console.error("Failed to load reviews:", error);
+      // Error is already handled in loadReviews function
+    });
 
     hideLoading();
   } catch (error) {
@@ -281,26 +290,210 @@ function displayRatingSummary(data) {
   }
 
   // Display rating distribution if available
-  if (data.distribution) {
+  if (data.percentages || data.distribution) {
+    const distribution = data.percentages || data.distribution || {};
     [5, 4, 3, 2, 1].forEach(rating => {
-      const percent = data.distribution[rating] || 0;
+      const percent = distribution[rating] || 0;
       const bar = document.getElementById(`bar${rating}`);
       const percentEl = document.getElementById(`percent${rating}`);
       if (bar) bar.style.width = `${percent}%`;
       if (percentEl) percentEl.textContent = `${percent}%`;
     });
-    document.getElementById("ratingDistributionCard").style.display = "block";
+    const ratingDistributionCard = document.getElementById("ratingDistributionCard");
+    if (ratingDistributionCard) {
+      ratingDistributionCard.style.display = "block";
+    }
+  }
+}
+
+// Load reviews
+async function loadReviews(page) {
+  try {
+    const reviewsList = document.getElementById("reviewsList");
+    if (!reviewsList) return;
+
+    showReviewsLoading();
+
+    const response = await apiService.getUserReviews(currentUserId, page, reviewsPerPage);
+    
+    // Handle API response
+    if (!response || !response.success) {
+      const errorMessage = response?.message || "Failed to load reviews. Please try again later.";
+      throw new Error(errorMessage);
+    }
+
+    const reviews = response.data || [];
+    const pagination = response.pagination || {};
+
+    currentPage = pagination.page || page;
+    totalPages = pagination.pages || 1;
+
+    displayReviews(reviews);
+    updatePagination();
+
+    hideReviewsLoading();
+  } catch (error) {
+    console.error("Error loading reviews:", error);
+    
+    // Extract a user-friendly error message
+    let errorMessage = "Failed to load reviews";
+    
+    if (error.message) {
+      // Remove "Request failed:" prefix if present
+      errorMessage = error.message.replace(/^Request failed:\s*/i, "").trim();
+      
+      // If message is empty or just "Request failed", use default
+      if (!errorMessage || errorMessage.toLowerCase() === "request failed") {
+        errorMessage = "Unable to load reviews at this time. Please try again later.";
+      }
+    }
+    
+    showReviewsError(errorMessage);
+  }
+}
+
+// Display reviews
+function displayReviews(reviews) {
+  const reviewsList = document.getElementById("reviewsList");
+  if (!reviewsList) return;
+
+  if (reviews.length === 0) {
+    reviewsList.innerHTML = '<div class="no-reviews">No reviews yet</div>';
+    return;
+  }
+
+  reviewsList.innerHTML = reviews
+    .map((review) => {
+      const reviewer = review.reviewerUserId || {};
+      const reviewerName = reviewer.name || "Anonymous";
+      const reviewerAvatar = reviewer.profile?.avatar || null;
+      const avatarUrl = reviewerAvatar
+        ? reviewerAvatar
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(reviewerName)}&background=ffb300&color=ffffff`;
+
+      const reviewDate = new Date(review.createdAt);
+      const formattedDate = reviewDate.toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const formattedTime = reviewDate.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      const stars = "⭐".repeat(review.rating || 0);
+
+      return `
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-info">
+              <img src="${avatarUrl}" alt="${reviewerName}" class="reviewer-avatar">
+              <div class="reviewer-details">
+                <h4 class="reviewer-name">${reviewerName}</h4>
+                ${review.serviceName ? `<p class="service-name">${review.serviceName}</p>` : ""}
+              </div>
+            </div>
+            <div class="review-rating">
+              <span class="rating-value-small">${(review.rating || 0).toFixed(1)}</span>
+              <span class="rating-stars">${stars}</span>
+            </div>
+          </div>
+          <div class="review-date">${formattedDate} @ ${formattedTime}</div>
+          ${review.reviewText ? `<div class="review-text">${review.reviewText}</div>` : ""}
+          ${review.tags && review.tags.length > 0 ? `<div class="review-tags">${review.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>` : ""}
+          ${review.pictures && review.pictures.length > 0 ? `<div class="review-pictures"><button class="view-pictures-btn" onclick="viewReviewPictures(${JSON.stringify(review.pictures).replace(/"/g, '&quot;')})">Click here to see review pictures</button></div>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+}
+
+// Update pagination
+function updatePagination() {
+  const pagination = document.getElementById("pagination");
+  const paginationInfo = document.getElementById("paginationInfo");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (!pagination || !paginationInfo || !prevBtn || !nextBtn) return;
+
+  if (totalPages <= 1) {
+    pagination.style.display = "none";
+    return;
+  }
+
+  pagination.style.display = "flex";
+  paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+}
+
+// Load previous page
+function loadPreviousPage() {
+  if (currentPage > 1) {
+    loadReviews(currentPage - 1);
+  }
+}
+
+// Load next page
+function loadNextPage() {
+  if (currentPage < totalPages) {
+    loadReviews(currentPage + 1);
+  }
+}
+
+// View review pictures
+function viewReviewPictures(pictures) {
+  if (pictures && pictures.length > 0) {
+    const imageUrls = pictures.join("\n");
+    alert(`Review Pictures:\n${imageUrls}\n\n(Full image viewer coming soon)`);
+  }
+}
+
+// Show reviews loading state
+function showReviewsLoading() {
+  const reviewsList = document.getElementById("reviewsList");
+  if (reviewsList) {
+    reviewsList.innerHTML = `
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading reviews...</p>
+      </div>
+    `;
+  }
+}
+
+// Hide reviews loading state
+function hideReviewsLoading() {
+  // Loading state is replaced by reviews
+}
+
+// Show reviews error state
+function showReviewsError(message) {
+  const reviewsList = document.getElementById("reviewsList");
+  if (reviewsList) {
+    reviewsList.innerHTML = `
+      <div class="error-state">
+        <p class="error-message-text">${message}</p>
+        <button class="retry-btn" onclick="loadReviews(1)">Retry</button>
+      </div>
+    `;
   }
 }
 
 // Setup event listeners
 function setupEventListeners() {
-  // View reviews button
-  const viewReviewsBtn = document.getElementById("viewReviewsBtn");
-  if (viewReviewsBtn) {
-    viewReviewsBtn.onclick = () => {
-      window.location.href = `reviews-ratings.html?userId=${currentUserId}`;
-    };
+  // Pagination buttons
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  if (prevBtn) {
+    prevBtn.onclick = loadPreviousPage;
+  }
+  if (nextBtn) {
+    nextBtn.onclick = loadNextPage;
   }
 
   // Share button
