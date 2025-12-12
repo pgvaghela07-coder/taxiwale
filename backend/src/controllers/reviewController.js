@@ -278,8 +278,8 @@ exports.getPartnerScore = async (req, res) => {
 
     const totalRatings = reviews.length;
     
-    // If less than 50 ratings, return warning
-    if (totalRatings < 50) {
+    // If less than 5 ratings, return warning
+    if (totalRatings < 5) {
       return res.json({
         success: true,
         data: {
@@ -288,7 +288,7 @@ exports.getPartnerScore = async (req, res) => {
           partnerScore: null,
           scoreCategory: null,
           warning: {
-            message: "This profile has less than 50 ratings. We do not guarantee reliability for advance payments. Please get references before making advance payments.",
+            message: "This profile has less than 5 ratings. We do not guarantee reliability for advance payments. Please get references before making advance payments.",
             showWarning: true
           }
         },

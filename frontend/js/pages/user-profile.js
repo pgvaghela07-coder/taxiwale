@@ -328,7 +328,7 @@ function displayPartnerScore(data) {
   const warningMessage = document.getElementById("warningMessage");
 
   if (!data.hasMinimumRatings) {
-    // Show warning for < 50 ratings
+    // Show warning for < 5 ratings
     if (warningCard) {
       warningCard.style.display = "flex";
       if (warningMessage) {
@@ -339,7 +339,7 @@ function displayPartnerScore(data) {
       partnerScoreCard.style.display = "none";
     }
   } else {
-    // Show partner score for 50+ ratings
+    // Show partner score for 5+ ratings
     if (warningCard) {
       warningCard.style.display = "none";
     }
