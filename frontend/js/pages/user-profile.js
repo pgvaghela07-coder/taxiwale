@@ -496,6 +496,43 @@ function setupEventListeners() {
     nextBtn.onclick = loadNextPage;
   }
 
+  // Write Review button
+  const writeReviewBtn = document.getElementById("writeReviewBtn");
+  if (writeReviewBtn) {
+    writeReviewBtn.onclick = openReviewModal;
+  }
+
+  // Close Review Modal
+  const closeReviewModal = document.getElementById("closeReviewModal");
+  if (closeReviewModal) {
+    closeReviewModal.onclick = closeReviewModalFunc;
+  }
+
+  // Review Modal Overlay click to close
+  const reviewModal = document.getElementById("reviewModal");
+  if (reviewModal) {
+    reviewModal.onclick = (e) => {
+      if (e.target === reviewModal) {
+        closeReviewModalFunc();
+      }
+    };
+  }
+
+  // Star Rating
+  setupStarRating();
+
+  // Review Text Character Count
+  const reviewText = document.getElementById("reviewText");
+  if (reviewText) {
+    reviewText.addEventListener("input", updateCharCount);
+  }
+
+  // Review Form Submit
+  const reviewForm = document.getElementById("reviewForm");
+  if (reviewForm) {
+    reviewForm.addEventListener("submit", handleReviewSubmit);
+  }
+
   // Share button
   const shareBtn = document.getElementById("shareBtn");
   if (shareBtn) {
@@ -518,6 +555,216 @@ function setupEventListeners() {
         });
       }
     };
+  }
+}
+
+// Open Review Modal
+function openReviewModal() {
+  // Check if user is logged in
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please login to write a review");
+    // Redirect to login or show login modal
+    window.location.href = "index.html";
+    return;
+  }
+
+  const reviewModal = document.getElementById("reviewModal");
+  if (reviewModal) {
+    reviewModal.classList.add("show");
+    // Reset form
+    resetReviewForm();
+  }
+}
+
+// Close Review Modal
+function closeReviewModalFunc() {
+  const reviewModal = document.getElementById("reviewModal");
+  if (reviewModal) {
+    reviewModal.classList.remove("show");
+  }
+}
+
+// Setup Star Rating
+function setupStarRating() {
+  const starRating = document.getElementById("starRating");
+  const selectedRating = document.getElementById("selectedRating");
+  if (!starRating || !selectedRating) return;
+
+  const stars = starRating.querySelectorAll(".star");
+  stars.forEach((star) => {
+    star.addEventListener("click", () => {
+      const rating = parseInt(star.getAttribute("data-rating"));
+      selectedRating.value = rating;
+      updateStarDisplay(rating);
+    });
+
+    star.addEventListener("mouseenter", () => {
+      const rating = parseInt(star.getAttribute("data-rating"));
+      highlightStars(rating);
+    });
+  });
+
+  starRating.addEventListener("mouseleave", () => {
+    const currentRating = parseInt(selectedRating.value) || 0;
+    updateStarDisplay(currentRating);
+  });
+}
+
+// Update Star Display
+function updateStarDisplay(rating) {
+  const starRating = document.getElementById("starRating");
+  if (!starRating) return;
+
+  starRating.setAttribute("data-rating", rating);
+  const stars = starRating.querySelectorAll(".star");
+  stars.forEach((star, index) => {
+    if (index < rating) {
+      star.classList.add("active");
+    } else {
+      star.classList.remove("active");
+    }
+  });
+}
+
+// Highlight Stars on Hover
+function highlightStars(rating) {
+  const starRating = document.getElementById("starRating");
+  if (!starRating) return;
+
+  const stars = starRating.querySelectorAll(".star");
+  stars.forEach((star, index) => {
+    if (index < rating) {
+      star.style.filter = "none";
+    } else {
+      star.style.filter = "grayscale(100%) opacity(0.5)";
+    }
+  });
+}
+
+// Update Character Count
+function updateCharCount() {
+  const reviewText = document.getElementById("reviewText");
+  const charCount = document.getElementById("charCount");
+  if (reviewText && charCount) {
+    const count = reviewText.value.length;
+    charCount.textContent = count;
+    if (count > 500) {
+      charCount.style.color = "#ef4444";
+    } else {
+      charCount.style.color = "var(--color-silver)";
+    }
+  }
+}
+
+// Reset Review Form
+function resetReviewForm() {
+  const form = document.getElementById("reviewForm");
+  if (form) {
+    form.reset();
+  }
+  const selectedRating = document.getElementById("selectedRating");
+  if (selectedRating) {
+    selectedRating.value = "";
+  }
+  updateStarDisplay(0);
+  updateCharCount();
+  const errorMsg = document.getElementById("reviewFormError");
+  if (errorMsg) {
+    errorMsg.style.display = "none";
+    errorMsg.textContent = "";
+  }
+}
+
+// Handle Review Submit
+async function handleReviewSubmit(event) {
+  event.preventDefault();
+
+  const submitBtn = document.getElementById("submitReviewBtn");
+  const errorMsg = document.getElementById("reviewFormError");
+  const ratingError = document.getElementById("ratingError");
+
+  // Reset errors
+  if (errorMsg) {
+    errorMsg.style.display = "none";
+    errorMsg.textContent = "";
+  }
+  if (ratingError) {
+    ratingError.textContent = "";
+  }
+
+  // Get form values
+  const rating = parseInt(document.getElementById("selectedRating").value);
+  const reviewText = document.getElementById("reviewText").value.trim();
+  const serviceName = document.getElementById("serviceName").value.trim();
+
+  // Validate rating
+  if (!rating || rating < 1 || rating > 5) {
+    if (ratingError) {
+      ratingError.textContent = "Please select a rating";
+      ratingError.style.display = "block";
+    }
+    return;
+  }
+
+  // Get selected tags
+  const tagCheckboxes = document.querySelectorAll(".tag-checkbox input[type='checkbox']:checked");
+  const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+
+  // Prepare review data
+  const reviewData = {
+    rating,
+    reviewText: reviewText || "",
+    tags: tags,
+    serviceName: serviceName || "",
+  };
+
+  // Disable submit button
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+  }
+
+  try {
+    const response = await apiService.createReview(currentUserId, reviewData);
+    
+    if (response.success) {
+      // Show success message
+      alert("Review submitted successfully!");
+      
+      // Close modal
+      closeReviewModalFunc();
+      
+      // Reload reviews and rating summary
+      await Promise.all([
+        loadReviews(1),
+        loadRatingSummary()
+      ]);
+    } else {
+      throw new Error(response.message || "Failed to submit review");
+    }
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    
+    // Show error message
+    let errorMessage = "Failed to submit review";
+    if (error.message) {
+      errorMessage = error.message.replace(/^Request failed:\s*/i, "").trim();
+      if (!errorMessage || errorMessage.toLowerCase() === "request failed") {
+        errorMessage = "Unable to submit review. Please try again later.";
+      }
+    }
+    
+    if (errorMsg) {
+      errorMsg.textContent = errorMessage;
+      errorMsg.style.display = "block";
+    }
+  } finally {
+    // Re-enable submit button
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Review";
+    }
   }
 }
 

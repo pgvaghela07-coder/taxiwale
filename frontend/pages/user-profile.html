@@ -82,6 +82,7 @@
         <span class="rating-value" id="averageRating">0.0</span>
       </div>
       <div class="rating-text" id="ratingText">Based on 0 ratings & reviews</div>
+      <button class="write-review-btn" id="writeReviewBtn">Write a Review</button>
     </div>
 
     <!-- Rating Distribution -->
@@ -183,6 +184,99 @@
     <!-- Error State -->
     <div class="error-state" id="errorState" style="display: none;">
       <p id="errorMessage">Error loading profile</p>
+    </div>
+  </div>
+
+  <!-- Write Review Modal -->
+  <div class="review-modal-overlay" id="reviewModal">
+    <div class="review-modal">
+      <div class="review-modal-header">
+        <h3>Write a Review</h3>
+        <button class="close-modal-btn" id="closeReviewModal">&times;</button>
+      </div>
+      <form class="review-form" id="reviewForm">
+        <!-- Rating Selection -->
+        <div class="form-group">
+          <label class="form-label">Rating *</label>
+          <div class="star-rating" id="starRating">
+            <span class="star" data-rating="1">⭐</span>
+            <span class="star" data-rating="2">⭐</span>
+            <span class="star" data-rating="3">⭐</span>
+            <span class="star" data-rating="4">⭐</span>
+            <span class="star" data-rating="5">⭐</span>
+          </div>
+          <input type="hidden" id="selectedRating" name="rating" required>
+          <span class="error-message" id="ratingError"></span>
+        </div>
+
+        <!-- Review Text -->
+        <div class="form-group">
+          <label for="reviewText" class="form-label">Your Review</label>
+          <textarea
+            id="reviewText"
+            name="reviewText"
+            class="mobile-input"
+            rows="4"
+            placeholder="Share your experience..."
+            maxlength="500"
+          ></textarea>
+          <div class="char-count">
+            <span id="charCount">0</span>/500
+          </div>
+        </div>
+
+        <!-- Service Name -->
+        <div class="form-group">
+          <label for="serviceName" class="form-label">Service Name (Optional)</label>
+          <input
+            type="text"
+            id="serviceName"
+            name="serviceName"
+            class="mobile-input"
+            placeholder="e.g., Ana taxi service"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group">
+          <label class="form-label">Tags (Optional)</label>
+          <div class="tags-selection">
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Excellent behaviour">
+              <span>Excellent behaviour</span>
+            </label>
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Highly recommended">
+              <span>Highly recommended</span>
+            </label>
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Punctual">
+              <span>Punctual</span>
+            </label>
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Safe driver">
+              <span>Safe driver</span>
+            </label>
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Good communication">
+              <span>Good communication</span>
+            </label>
+            <label class="tag-checkbox">
+              <input type="checkbox" value="Clean vehicle">
+              <span>Clean vehicle</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="reviewFormError" style="display: none;"></div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="otp-button" id="submitReviewBtn">
+          Submit Review
+        </button>
+      </form>
     </div>
   </div>
 
