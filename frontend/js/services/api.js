@@ -10,7 +10,7 @@ function getApiBaseUrl() {
   }
 
   // Production Backend URL - Default for all environments
-  const PRODUCTION_API_URL = "https://taxiwalepartners.com/api";
+  const PRODUCTION_API_URL = window.location.origin + "/api";
 
   // Auto-detect environment
   const currentHost = window.location.hostname;
