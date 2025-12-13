@@ -30,6 +30,8 @@ const allowedOrigins = [
   "https://www.taxiwalepartners.com", // Backend domain with www
   "https://www.taxiwalepartners.com", // Your frontend added
   "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
+  "https://ranaak.com", // Frontend domain
+  "https://www.ranaak.com", // Frontend domain with www
 ];
 
 if (process.env.FRONTEND_URL) {
