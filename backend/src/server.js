@@ -30,8 +30,10 @@ const allowedOrigins = [
   "https://www.taxiwalepartners.com", // Backend domain with www
   "https://www.taxiwalepartners.com", // Your frontend added
   "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
-  "https://ranaak.com", // Frontend domain
-  "https://www.ranaak.com", // Frontend domain with www
+  "http://ranaak.com", // Frontend domain (http)
+  "https://ranaak.com", // Frontend domain (https)
+  "http://www.ranaak.com", // Frontend domain with www (http)
+  "https://www.ranaak.com", // Frontend domain with www (https)
 ];
 
 if (process.env.FRONTEND_URL) {
@@ -125,7 +127,7 @@ function findAvailablePort(startPort, callback) {
   });
 }
 
-const START_PORT = parseInt(process.env.PORT) || 5000;
+const START_PORT = parseInt(process.env.PORT) || 6300;
 
 findAvailablePort(START_PORT, (port) => {
   server.listen(port, "0.0.0.0", () => {

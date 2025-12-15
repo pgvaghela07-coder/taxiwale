@@ -9,11 +9,32 @@ function getApiBaseUrl() {
     return storedUrl;
   }
 
-  // Production Backend URL - Default for all environments
-  const PRODUCTION_API_URL = window.location.origin + "/api";
-
   // Auto-detect environment
   const currentHost = window.location.hostname;
+  const currentOrigin = window.location.origin;
+
+  // Production Backend URL - Default for all environments
+  // Use same-origin for hosted envs, but fall back to localhost when opened via file://
+  const PRODUCTION_API_URL = (() => {
+    // file:// or null origins → fall back to local backend
+    if (currentOrigin === "file://" || currentOrigin === "null") {
+      return "http://localhost:5000/api";
+    }
+
+    // When served from localhost/127 on a different port (e.g., 5500/5502 via Live Server),
+    // default to backend port 5000 on the same host to avoid hitting the static server.
+    const isLocalHost =
+      currentHost === "localhost" ||
+      currentHost === "127.0.0.1" ||
+      currentHost === "0.0.0.0";
+
+    if (isLocalHost && window.location.port && window.location.port !== "5000") {
+      return `http://${currentHost}:5000/api`;
+    }
+
+    // Otherwise use same-origin /api
+    return `${currentOrigin}/api`;
+  })();
   const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
   const isLocalNetwork = currentHost.startsWith("192.168.") || 
                          currentHost.startsWith("10.") || 
