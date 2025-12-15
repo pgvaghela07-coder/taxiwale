@@ -32,6 +32,23 @@ function getApiBaseUrl() {
       return `http://${currentHost}:5000/api`;
     }
 
+    // Production: ranaak.com domain
+    // Backend is on same domain, use same-origin /api
+    // If backend is on different port, use port 6300 (backend default)
+    const isRanaakDomain = 
+      currentHost === "ranaak.com" || 
+      currentHost === "www.ranaak.com" ||
+      currentHost.includes("ranaak.com");
+
+    if (isRanaakDomain) {
+      // Try same-origin /api first (if backend is on same server)
+      // If that doesn't work, backend might be on port 6300
+      // User can override with localStorage if needed
+      const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+      // Use same-origin /api for production
+      return `${protocol}//${currentHost}/api`;
+    }
+
     // Otherwise use same-origin /api
     return `${currentOrigin}/api`;
   })();
