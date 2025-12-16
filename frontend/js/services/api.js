@@ -10,12 +10,12 @@ async function checkPortAvailability(host, port) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-    
+
     const response = await fetch(`http://${host}:${port}/health`, {
-      method: 'GET',
-      signal: controller.signal
+      method: "GET",
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {
@@ -24,16 +24,16 @@ async function checkPortAvailability(host, port) {
 }
 
 // Find available backend port
-async function findAvailablePort(host = 'localhost') {
+async function findAvailablePort(host = "localhost") {
   // Check cached port first
-  const cachedPort = localStorage.getItem('DETECTED_BACKEND_PORT');
+  const cachedPort = localStorage.getItem("DETECTED_BACKEND_PORT");
   if (cachedPort) {
     const isAvailable = await checkPortAvailability(host, parseInt(cachedPort));
     if (isAvailable) {
       return parseInt(cachedPort);
     }
     // Cached port not available, clear it
-    localStorage.removeItem('DETECTED_BACKEND_PORT');
+    localStorage.removeItem("DETECTED_BACKEND_PORT");
   }
 
   // Try all common ports
@@ -41,7 +41,7 @@ async function findAvailablePort(host = 'localhost') {
     const isAvailable = await checkPortAvailability(host, port);
     if (isAvailable) {
       // Cache the working port
-      localStorage.setItem('DETECTED_BACKEND_PORT', port.toString());
+      localStorage.setItem("DETECTED_BACKEND_PORT", port.toString());
       console.log(`✅ Backend found on port ${port}`);
       return port;
     }
@@ -51,47 +51,56 @@ async function findAvailablePort(host = 'localhost') {
 }
 
 function getApiBaseUrl() {
-  // Check if API URL is set in localStorage (for manual override)
+  // ✅ PRODUCTION FIX
+  if (
+    window.location.hostname === "taxiwalepartners.com" ||
+    window.location.hostname === "www.taxiwalepartners.com"
+  ) {
+    return "https://taxiwalepartners.com/api";
+  }
+
+  // existing logic
   const storedUrl = localStorage.getItem("API_BASE_URL");
   if (storedUrl) {
     return storedUrl;
   }
-
   // Auto-detect environment
   const currentHost = window.location.hostname;
   const currentProtocol = window.location.protocol;
-  const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+  const isLocalhost =
+    currentHost === "localhost" || currentHost === "127.0.0.1";
   const isFileProtocol = currentProtocol === "file:";
-  const isLocalNetwork = currentHost.startsWith("192.168.") || 
-                         currentHost.startsWith("10.") || 
-                         currentHost.startsWith("172.16.") ||
-                         currentHost.startsWith("172.17.") ||
-                         currentHost.startsWith("172.18.") ||
-                         currentHost.startsWith("172.19.") ||
-                         currentHost.startsWith("172.20.") ||
-                         currentHost.startsWith("172.21.") ||
-                         currentHost.startsWith("172.22.") ||
-                         currentHost.startsWith("172.23.") ||
-                         currentHost.startsWith("172.24.") ||
-                         currentHost.startsWith("172.25.") ||
-                         currentHost.startsWith("172.26.") ||
-                         currentHost.startsWith("172.27.") ||
-                         currentHost.startsWith("172.28.") ||
-                         currentHost.startsWith("172.29.") ||
-                         currentHost.startsWith("172.30.") ||
-                         currentHost.startsWith("172.31.");
+  const isLocalNetwork =
+    currentHost.startsWith("192.168.") ||
+    currentHost.startsWith("10.") ||
+    currentHost.startsWith("172.16.") ||
+    currentHost.startsWith("172.17.") ||
+    currentHost.startsWith("172.18.") ||
+    currentHost.startsWith("172.19.") ||
+    currentHost.startsWith("172.20.") ||
+    currentHost.startsWith("172.21.") ||
+    currentHost.startsWith("172.22.") ||
+    currentHost.startsWith("172.23.") ||
+    currentHost.startsWith("172.24.") ||
+    currentHost.startsWith("172.25.") ||
+    currentHost.startsWith("172.26.") ||
+    currentHost.startsWith("172.27.") ||
+    currentHost.startsWith("172.28.") ||
+    currentHost.startsWith("172.29.") ||
+    currentHost.startsWith("172.30.") ||
+    currentHost.startsWith("172.31.");
 
   // For localhost or file:// protocol: use localhost backend
   if (isLocalhost || isFileProtocol) {
     // Try to get cached port, otherwise use default 6300
-    const cachedPort = localStorage.getItem('DETECTED_BACKEND_PORT');
+    const cachedPort = localStorage.getItem("DETECTED_BACKEND_PORT");
     const port = cachedPort ? parseInt(cachedPort) : 6300;
     return `http://localhost:${port}/api`;
   }
 
   // Local network: use same IP with port 6300 (for mobile/local device testing)
   if (isLocalNetwork) {
-    const cachedPort = localStorage.getItem('DETECTED_BACKEND_PORT');
+    const cachedPort = localStorage.getItem("DETECTED_BACKEND_PORT");
     const port = cachedPort ? parseInt(cachedPort) : 6300;
     return `http://${currentHost}:${port}/api`;
   }
@@ -108,26 +117,40 @@ console.log("🌐 API Base URL (initial):", API_BASE_URL);
 (async () => {
   const currentHost = window.location.hostname;
   const currentProtocol = window.location.protocol;
-  const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+  const isLocalhost =
+    currentHost === "localhost" || currentHost === "127.0.0.1";
   const isFileProtocol = currentProtocol === "file:";
-  
+
   if (isLocalhost || isFileProtocol) {
-    const availablePort = await findAvailablePort('localhost');
+    const availablePort = await findAvailablePort("localhost");
     if (availablePort) {
       API_BASE_URL = `http://localhost:${availablePort}/api`;
       console.log("🌐 API Base URL (detected):", API_BASE_URL);
     } else {
-      console.warn("⚠️ No local backend found. Using default or production URL.");
+      console.warn(
+        "⚠️ No local backend found. Using default or production URL."
+      );
     }
-  } else if (currentHost.startsWith("192.168.") || currentHost.startsWith("10.") || 
-             currentHost.startsWith("172.16.") || currentHost.startsWith("172.17.") ||
-             currentHost.startsWith("172.18.") || currentHost.startsWith("172.19.") ||
-             currentHost.startsWith("172.20.") || currentHost.startsWith("172.21.") ||
-             currentHost.startsWith("172.22.") || currentHost.startsWith("172.23.") ||
-             currentHost.startsWith("172.24.") || currentHost.startsWith("172.25.") ||
-             currentHost.startsWith("172.26.") || currentHost.startsWith("172.27.") ||
-             currentHost.startsWith("172.28.") || currentHost.startsWith("172.29.") ||
-             currentHost.startsWith("172.30.") || currentHost.startsWith("172.31.")) {
+  } else if (
+    currentHost.startsWith("192.168.") ||
+    currentHost.startsWith("10.") ||
+    currentHost.startsWith("172.16.") ||
+    currentHost.startsWith("172.17.") ||
+    currentHost.startsWith("172.18.") ||
+    currentHost.startsWith("172.19.") ||
+    currentHost.startsWith("172.20.") ||
+    currentHost.startsWith("172.21.") ||
+    currentHost.startsWith("172.22.") ||
+    currentHost.startsWith("172.23.") ||
+    currentHost.startsWith("172.24.") ||
+    currentHost.startsWith("172.25.") ||
+    currentHost.startsWith("172.26.") ||
+    currentHost.startsWith("172.27.") ||
+    currentHost.startsWith("172.28.") ||
+    currentHost.startsWith("172.29.") ||
+    currentHost.startsWith("172.30.") ||
+    currentHost.startsWith("172.31.")
+  ) {
     const availablePort = await findAvailablePort(currentHost);
     if (availablePort) {
       API_BASE_URL = `http://${currentHost}:${availablePort}/api`;
@@ -169,16 +192,28 @@ class ApiService {
       // Check if response is ok before parsing JSON
       if (!response.ok) {
         // If we get a network error and we're on localhost, try to detect port again
-        if (response.status === 0 || response.status === 502 || response.status === 503) {
+        if (
+          response.status === 0 ||
+          response.status === 502 ||
+          response.status === 503
+        ) {
           const currentHost = window.location.hostname;
-          const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+          const isLocalhost =
+            currentHost === "localhost" || currentHost === "127.0.0.1";
           const currentProtocol = window.location.protocol;
           const isFileProtocol = currentProtocol === "file:";
-          
-          if ((isLocalhost || isFileProtocol) && !localStorage.getItem("API_BASE_URL")) {
+
+          if (
+            (isLocalhost || isFileProtocol) &&
+            !localStorage.getItem("API_BASE_URL")
+          ) {
             console.log("🔄 Backend not responding, trying to detect port...");
-            const availablePort = await findAvailablePort('localhost');
-            if (availablePort && availablePort.toString() !== localStorage.getItem('DETECTED_BACKEND_PORT')) {
+            const availablePort = await findAvailablePort("localhost");
+            if (
+              availablePort &&
+              availablePort.toString() !==
+                localStorage.getItem("DETECTED_BACKEND_PORT")
+            ) {
               API_BASE_URL = `http://localhost:${availablePort}/api`;
               console.log("🔄 Retrying with detected port:", API_BASE_URL);
               // Retry the request with new URL
@@ -202,18 +237,20 @@ class ApiService {
           method: options.method || "GET",
           data: errorData,
         });
-        
+
         // Provide helpful error message for Method Not Allowed
         if (response.status === 405) {
           console.error("💡 Method Not Allowed - Check:");
           console.error("   1. Backend server is running");
           console.error("   2. API URL is correct:", API_BASE_URL);
-          console.error("   3. To set custom API URL: localStorage.setItem('API_BASE_URL', 'http://localhost:PORT/api')");
+          console.error(
+            "   3. To set custom API URL: localStorage.setItem('API_BASE_URL', 'http://localhost:PORT/api')"
+          );
           throw new Error(
             `Method Not Allowed (405). Check if backend is running and API URL is correct. Current URL: ${API_BASE_URL}`
           );
         }
-        
+
         throw new Error(
           errorData.message ||
             errorData.error ||
@@ -229,15 +266,23 @@ class ApiService {
       if (error.name === "TypeError" && error.message.includes("fetch")) {
         // Try to detect port if we're on localhost
         const currentHost = window.location.hostname;
-        const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+        const isLocalhost =
+          currentHost === "localhost" || currentHost === "127.0.0.1";
         const currentProtocol = window.location.protocol;
         const isFileProtocol = currentProtocol === "file:";
-        
-        if ((isLocalhost || isFileProtocol) && !localStorage.getItem("API_BASE_URL")) {
+
+        if (
+          (isLocalhost || isFileProtocol) &&
+          !localStorage.getItem("API_BASE_URL")
+        ) {
           console.log("🔄 Network error, trying to detect backend port...");
           try {
-            const availablePort = await findAvailablePort('localhost');
-            if (availablePort && availablePort.toString() !== localStorage.getItem('DETECTED_BACKEND_PORT')) {
+            const availablePort = await findAvailablePort("localhost");
+            if (
+              availablePort &&
+              availablePort.toString() !==
+                localStorage.getItem("DETECTED_BACKEND_PORT")
+            ) {
               API_BASE_URL = `http://localhost:${availablePort}/api`;
               console.log("🔄 Retrying with detected port:", API_BASE_URL);
               // Retry the request with new URL
@@ -247,12 +292,12 @@ class ApiService {
             console.error("Failed to detect port:", detectError);
           }
         }
-        
+
         console.error(
           "❌ Network Error - Backend server might be down:",
           error
         );
-        const apiUrl = API_BASE_URL.replace('/api', '');
+        const apiUrl = API_BASE_URL.replace("/api", "");
         throw new Error(
           `Cannot connect to server. Please check if the backend server is running at ${apiUrl}`
         );
