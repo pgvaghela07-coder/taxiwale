@@ -25,15 +25,21 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
   "http://localhost:5502",
   "http://127.0.0.1:5502",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+  "http://localhost:6300",
+  "http://127.0.0.1:6300",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://localhost:8000",
+  "http://127.0.0.1:8000",
   "https://taxiwale.onrender.com",
   "https://taxiwalepartners.com", // Backend domain
   "https://www.taxiwalepartners.com", // Backend domain with www
   "https://www.taxiwalepartners.com", // Your frontend added
   "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
-  "http://ranaak.com", // Frontend domain (http)
-  "https://ranaak.com", // Frontend domain (https)
-  "http://www.ranaak.com", // Frontend domain with www (http)
-  "https://www.ranaak.com", // Frontend domain with www (https)
+  "https://ranaak.com", // Frontend domain
+  "https://www.ranaak.com", // Frontend domain with www
 ];
 
 if (process.env.FRONTEND_URL) {
@@ -44,17 +50,29 @@ if (process.env.FRONTEND_URL) {
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // mobile / postman support
+      // Allow requests with no origin (like mobile apps, Postman, or file://)
+      if (!origin) return callback(null, true);
+      
+      // Allow localhost and 127.0.0.1 on any port for development
+      if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+        return callback(null, true);
+      }
+      
       if (allowedOrigins.includes(origin)) return callback(null, true);
 
       console.log("❌ CORS Blocked:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Handle OPTIONS preflight requests explicitly
+app.options("*", (req, res) => {
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

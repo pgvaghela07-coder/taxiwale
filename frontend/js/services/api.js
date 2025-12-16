@@ -1,6 +1,6 @@
 // API Service for Tripeaz Taxi Partners Frontend
 // Get API URL from localStorage or use default
-// On phone, set this in browser console: localStorage.setItem('API_BASE_URL', 'http://192.168.1.100:5000/api')
+// On phone, set this in browser console: localStorage.setItem('API_BASE_URL', 'http://192.168.1.100:6300/api')
 // Production: Automatically uses Render backend URL
 function getApiBaseUrl() {
   // Check if API URL is set in localStorage (for manual override)
@@ -11,48 +11,9 @@ function getApiBaseUrl() {
 
   // Auto-detect environment
   const currentHost = window.location.hostname;
-  const currentOrigin = window.location.origin;
-
-  // Production Backend URL - Default for all environments
-  // Use same-origin for hosted envs, but fall back to localhost when opened via file://
-  const PRODUCTION_API_URL = (() => {
-    // file:// or null origins → fall back to local backend
-    if (currentOrigin === "file://" || currentOrigin === "null") {
-      return "http://localhost:5000/api";
-    }
-
-    // When served from localhost/127 on a different port (e.g., 5500/5502 via Live Server),
-    // default to backend port 5000 on the same host to avoid hitting the static server.
-    const isLocalHost =
-      currentHost === "localhost" ||
-      currentHost === "127.0.0.1" ||
-      currentHost === "0.0.0.0";
-
-    if (isLocalHost && window.location.port && window.location.port !== "5000") {
-      return `http://${currentHost}:5000/api`;
-    }
-
-    // Production: ranaak.com domain
-    // Backend is on same domain, use same-origin /api
-    // If backend is on different port, use port 6300 (backend default)
-    const isRanaakDomain = 
-      currentHost === "ranaak.com" || 
-      currentHost === "www.ranaak.com" ||
-      currentHost.includes("ranaak.com");
-
-    if (isRanaakDomain) {
-      // Try same-origin /api first (if backend is on same server)
-      // If that doesn't work, backend might be on port 6300
-      // User can override with localStorage if needed
-      const protocol = window.location.protocol === "https:" ? "https:" : "http:";
-      // Use same-origin /api for production
-      return `${protocol}//${currentHost}/api`;
-    }
-
-    // Otherwise use same-origin /api
-    return `${currentOrigin}/api`;
-  })();
+  const currentProtocol = window.location.protocol;
   const isLocalhost = currentHost === "localhost" || currentHost === "127.0.0.1";
+  const isFileProtocol = currentProtocol === "file:";
   const isLocalNetwork = currentHost.startsWith("192.168.") || 
                          currentHost.startsWith("10.") || 
                          currentHost.startsWith("172.16.") ||
@@ -72,15 +33,23 @@ function getApiBaseUrl() {
                          currentHost.startsWith("172.30.") ||
                          currentHost.startsWith("172.31.");
 
-  // Local network: use same IP with port 5000 (for mobile/local device testing)
-  if (isLocalNetwork) {
-    return `http://${currentHost}:5000/api`;
+  // For localhost or file:// protocol: use localhost backend
+  // Try port 6300 first (default), then 5000 as fallback
+  if (isLocalhost || isFileProtocol) {
+    // Default to 6300, but user can override via localStorage
+    // To use port 5000: localStorage.setItem('API_BASE_URL', 'http://localhost:5000/api')
+    return "http://localhost:6300/api";
   }
 
-  // Default: Use Render backend URL (for localhost and production)
+  // Local network: use same IP with port 6300 (for mobile/local device testing)
+  if (isLocalNetwork) {
+    return `http://${currentHost}:6300/api`;
+  }
+
+  // Production: Use Render backend URL
   // Backend is deployed on Render, so use Render URL by default
-  // To use localhost backend: localStorage.setItem('API_BASE_URL', 'http://localhost:5000/api')
-  return PRODUCTION_API_URL;
+  // To use localhost backend: localStorage.setItem('API_BASE_URL', 'http://localhost:6300/api')
+  return window.location.origin + "/api";
 }
 
 const API_BASE_URL = getApiBaseUrl();
@@ -95,12 +64,11 @@ class ApiService {
     return localStorage.getItem("token");
   }
 
-  async request(endpoint, options = {}, requireAuth = true) {
+  async request(endpoint, options = {}) {
     // Get fresh token on each request
     const token = this.getToken();
 
-    // Check auth requirement - allow public endpoints
-    if (requireAuth && !token && !endpoint.includes("/auth/") && !endpoint.includes("/public/") && !endpoint.includes("/reviews/") && !endpoint.includes("/vehicles/user/")) {
+    if (!token && !endpoint.includes("/auth/")) {
       throw new Error("No token, authorization denied. Please login first.");
     }
 
@@ -109,7 +77,7 @@ class ApiService {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token && requireAuth && { Authorization: `Bearer ${token}` }),
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
     };
@@ -131,8 +99,21 @@ class ApiService {
           status: response.status,
           statusText: response.statusText,
           url: url,
+          method: options.method || "GET",
           data: errorData,
         });
+        
+        // Provide helpful error message for Method Not Allowed
+        if (response.status === 405) {
+          console.error("💡 Method Not Allowed - Check:");
+          console.error("   1. Backend server is running");
+          console.error("   2. API URL is correct:", API_BASE_URL);
+          console.error("   3. To set custom API URL: localStorage.setItem('API_BASE_URL', 'http://localhost:PORT/api')");
+          throw new Error(
+            `Method Not Allowed (405). Check if backend is running and API URL is correct. Current URL: ${API_BASE_URL}`
+          );
+        }
+        
         throw new Error(
           errorData.message ||
             errorData.error ||
@@ -358,67 +339,6 @@ class ApiService {
 
   async getProfileQR() {
     return this.request("/profile/qr");
-  }
-
-  // Public profile (no auth required)
-  async getPublicProfile(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    try {
-      // Try profile public endpoint first
-      const endpoint = `/profile/public/${encodedUserId}`;
-      return await this.request(endpoint, {
-        method: "GET",
-      }, false); // false = no auth required
-    } catch (error) {
-      // Fallback to users public endpoint if profile endpoint fails
-      console.warn("Profile endpoint failed, trying users public endpoint:", error);
-      const fallbackEndpoint = `/users/public/${encodedUserId}`;
-      return await this.request(fallbackEndpoint, {
-        method: "GET",
-      }, false); // false = no auth required
-    }
-  }
-
-  // Review methods
-  async getUserReviews(userId, page = 1, limit = 10) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(
-      `/reviews/${encodedUserId}/reviews?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-      },
-      false // Public endpoint, no auth required
-    );
-  }
-
-  async createReview(userId, reviewData) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/reviews/${encodedUserId}/review`, {
-      method: "POST",
-      body: JSON.stringify(reviewData),
-    });
-  }
-
-  async getRatingSummary(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/reviews/${encodedUserId}/rating-summary`, {
-      method: "GET",
-    }, false); // Public endpoint, no auth required
-  }
-
-  async getPartnerScore(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/reviews/${encodedUserId}/partner-score`, {
-      method: "GET",
-    }, false); // Public endpoint, no auth required
-  }
-
-  // Vehicle methods
-  async getUserVehicles(userId) {
-    const encodedUserId = encodeURIComponent(userId);
-    return this.request(`/vehicles/user/${encodedUserId}`, {
-      method: "GET",
-    }, false); // Public endpoint, no auth required
   }
 
   // User search for assignment
