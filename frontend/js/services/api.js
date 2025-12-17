@@ -51,7 +51,15 @@ async function findAvailablePort(host = "localhost") {
 }
 
 function getApiBaseUrl() {
-  // ✅ PRODUCTION FIX
+  // ✅ PRODUCTION FIX - ranaak.com backend
+  if (
+    window.location.hostname === "ranaak.com" ||
+    window.location.hostname === "www.ranaak.com"
+  ) {
+    return "https://ranaak.com/";
+  }
+
+  // ✅ PRODUCTION FIX - taxiwalepartners.com backend
   if (
     window.location.hostname === "taxiwalepartners.com" ||
     window.location.hostname === "www.taxiwalepartners.com"
@@ -59,9 +67,10 @@ function getApiBaseUrl() {
     return "https://taxiwalepartners.com/api";
   }
 
-  // existing logic
+  // Check localStorage - but ignore localhost URLs (use production instead)
   const storedUrl = localStorage.getItem("API_BASE_URL");
-  if (storedUrl) {
+  if (storedUrl && !storedUrl.includes("localhost") && !storedUrl.includes("127.0.0.1")) {
+    // Only use stored URL if it's not localhost (allow custom production URLs)
     return storedUrl;
   }
   // Auto-detect environment
@@ -90,74 +99,41 @@ function getApiBaseUrl() {
     currentHost.startsWith("172.30.") ||
     currentHost.startsWith("172.31.");
 
-  // For localhost or file:// protocol: use localhost backend
+  // For localhost or file:// protocol: use ranaak.com backend (production)
   if (isLocalhost || isFileProtocol) {
-    // Try to get cached port, otherwise use default 6300
-    const cachedPort = localStorage.getItem("DETECTED_BACKEND_PORT");
-    const port = cachedPort ? parseInt(cachedPort) : 6300;
-    return `http://localhost:${port}/api`;
+    // Use production backend at ranaak.com
+    return "https://ranaak.com/api";
   }
 
-  // Local network: use same IP with port 6300 (for mobile/local device testing)
+  // Local network: use ranaak.com backend (production)
   if (isLocalNetwork) {
-    const cachedPort = localStorage.getItem("DETECTED_BACKEND_PORT");
-    const port = cachedPort ? parseInt(cachedPort) : 6300;
-    return `http://${currentHost}:${port}/api`;
+    return "https://ranaak.com/api";
   }
 
-  // Production: Use production backend URL
-  return window.location.origin + "/api";
+  // Production: Use ranaak.com backend
+  return "https://ranaak.com/api";
 }
 
 // Initialize API base URL
 let API_BASE_URL = getApiBaseUrl();
 console.log("🌐 API Base URL (initial):", API_BASE_URL);
 
-// Auto-detect port on page load (only for localhost/file protocol)
-(async () => {
-  const currentHost = window.location.hostname;
-  const currentProtocol = window.location.protocol;
-  const isLocalhost =
-    currentHost === "localhost" || currentHost === "127.0.0.1";
-  const isFileProtocol = currentProtocol === "file:";
-
-  if (isLocalhost || isFileProtocol) {
-    const availablePort = await findAvailablePort("localhost");
-    if (availablePort) {
-      API_BASE_URL = `http://localhost:${availablePort}/api`;
-      console.log("🌐 API Base URL (detected):", API_BASE_URL);
-    } else {
-      console.warn(
-        "⚠️ No local backend found. Using default or production URL."
-      );
-    }
-  } else if (
-    currentHost.startsWith("192.168.") ||
-    currentHost.startsWith("10.") ||
-    currentHost.startsWith("172.16.") ||
-    currentHost.startsWith("172.17.") ||
-    currentHost.startsWith("172.18.") ||
-    currentHost.startsWith("172.19.") ||
-    currentHost.startsWith("172.20.") ||
-    currentHost.startsWith("172.21.") ||
-    currentHost.startsWith("172.22.") ||
-    currentHost.startsWith("172.23.") ||
-    currentHost.startsWith("172.24.") ||
-    currentHost.startsWith("172.25.") ||
-    currentHost.startsWith("172.26.") ||
-    currentHost.startsWith("172.27.") ||
-    currentHost.startsWith("172.28.") ||
-    currentHost.startsWith("172.29.") ||
-    currentHost.startsWith("172.30.") ||
-    currentHost.startsWith("172.31.")
-  ) {
-    const availablePort = await findAvailablePort(currentHost);
-    if (availablePort) {
-      API_BASE_URL = `http://${currentHost}:${availablePort}/api`;
-      console.log("🌐 API Base URL (detected):", API_BASE_URL);
-    }
+// Clear old localhost URLs from localStorage on page load
+(function clearOldLocalhostUrls() {
+  const storedUrl = localStorage.getItem("API_BASE_URL");
+  if (storedUrl && (storedUrl.includes("localhost") || storedUrl.includes("127.0.0.1"))) {
+    console.log("🧹 Clearing old localhost URL from localStorage:", storedUrl);
+    localStorage.removeItem("API_BASE_URL");
+    localStorage.removeItem("DETECTED_BACKEND_PORT");
+    // Update API_BASE_URL to use production
+    API_BASE_URL = "https://ranaak.com/api";
+    console.log("✅ Now using production backend:", API_BASE_URL);
   }
 })();
+
+// Port auto-detection disabled - using production backend at ranaak.com
+// If you need to use localhost backend, set it manually:
+// localStorage.setItem('API_BASE_URL', 'http://localhost:6300/api')
 
 class ApiService {
   constructor() {
@@ -191,36 +167,6 @@ class ApiService {
 
       // Check if response is ok before parsing JSON
       if (!response.ok) {
-        // If we get a network error and we're on localhost, try to detect port again
-        if (
-          response.status === 0 ||
-          response.status === 502 ||
-          response.status === 503
-        ) {
-          const currentHost = window.location.hostname;
-          const isLocalhost =
-            currentHost === "localhost" || currentHost === "127.0.0.1";
-          const currentProtocol = window.location.protocol;
-          const isFileProtocol = currentProtocol === "file:";
-
-          if (
-            (isLocalhost || isFileProtocol) &&
-            !localStorage.getItem("API_BASE_URL")
-          ) {
-            console.log("🔄 Backend not responding, trying to detect port...");
-            const availablePort = await findAvailablePort("localhost");
-            if (
-              availablePort &&
-              availablePort.toString() !==
-                localStorage.getItem("DETECTED_BACKEND_PORT")
-            ) {
-              API_BASE_URL = `http://localhost:${availablePort}/api`;
-              console.log("🔄 Retrying with detected port:", API_BASE_URL);
-              // Retry the request with new URL
-              return this.request(endpoint, options);
-            }
-          }
-        }
 
         let errorData;
         try {
@@ -264,35 +210,6 @@ class ApiService {
     } catch (error) {
       // Handle network errors
       if (error.name === "TypeError" && error.message.includes("fetch")) {
-        // Try to detect port if we're on localhost
-        const currentHost = window.location.hostname;
-        const isLocalhost =
-          currentHost === "localhost" || currentHost === "127.0.0.1";
-        const currentProtocol = window.location.protocol;
-        const isFileProtocol = currentProtocol === "file:";
-
-        if (
-          (isLocalhost || isFileProtocol) &&
-          !localStorage.getItem("API_BASE_URL")
-        ) {
-          console.log("🔄 Network error, trying to detect backend port...");
-          try {
-            const availablePort = await findAvailablePort("localhost");
-            if (
-              availablePort &&
-              availablePort.toString() !==
-                localStorage.getItem("DETECTED_BACKEND_PORT")
-            ) {
-              API_BASE_URL = `http://localhost:${availablePort}/api`;
-              console.log("🔄 Retrying with detected port:", API_BASE_URL);
-              // Retry the request with new URL
-              return this.request(endpoint, options);
-            }
-          } catch (detectError) {
-            console.error("Failed to detect port:", detectError);
-          }
-        }
-
         console.error(
           "❌ Network Error - Backend server might be down:",
           error

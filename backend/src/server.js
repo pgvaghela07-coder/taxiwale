@@ -33,9 +33,7 @@ const allowedOrigins = [
   "http://127.0.0.1:8080",
   "http://localhost:8000",
   "http://127.0.0.1:8000",
-  "https://taxiwale.onrender.com",
   "https://taxiwalepartners.com", // Backend domain
-  "https://www.taxiwalepartners.com", // Backend domain with www
   "https://www.taxiwalepartners.com", // Your frontend added
   "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
   "https://ranaak.com", // Frontend domain
