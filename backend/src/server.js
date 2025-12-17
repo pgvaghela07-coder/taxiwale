@@ -127,25 +127,11 @@ app.use(errorHandler);
 
 // --------------- Start Server with Auto Free Port ---------------
 
-const net = require("net");
 
-function findAvailablePort(startPort, callback) {
-  const server = net.createServer();
-  server.listen(startPort, () => {
-    server.close(() => callback(startPort)); // Port free है
-  });
+const PORT = process.env.PORT || 6301;
 
-  server.on("error", () => {
-    // Port busy है → अगला port check करो
-    findAvailablePort(startPort + 1, callback);
-  });
-}
-
-const START_PORT = parseInt(process.env.PORT) || 6300;
-
-findAvailablePort(START_PORT, (port) => {
-  server.listen(port, "0.0.0.0", () => {
-    console.log(`🚀 Server running on port ${port}`);
-    console.log(`🌍 Accessible on http://localhost:${port}`);
-  });
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Accessible on http://localhost:${PORT}`);
+});
 });
