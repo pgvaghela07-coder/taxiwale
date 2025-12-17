@@ -67,10 +67,8 @@ app.use(
   })
 );
 
-// Handle OPTIONS preflight requests explicitly
-app.options("*", (req, res) => {
-  res.sendStatus(200);
-});
+// Note: OPTIONS requests are handled by CORS middleware above
+// Don't add explicit OPTIONS handler as it can cause duplicate CORS headers
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -56,7 +56,7 @@ function getApiBaseUrl() {
     window.location.hostname === "ranaak.com" ||
     window.location.hostname === "www.ranaak.com"
   ) {
-    return "https://ranaak.com/";
+    return "https://ranaak.com/api";
   }
 
   // ✅ PRODUCTION FIX - taxiwalepartners.com backend
