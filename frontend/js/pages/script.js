@@ -245,6 +245,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.success) {
+        // Store userId if provided (needed for OTP verification)
+        if (response.userId) {
+          sessionStorage.setItem("otpUserId", response.userId);
+        }
+        
         // Show OTP popup if OTP is provided (development mode)
         if (response.otp) {
           showOTPPopup(response.otp, mobileNumber);

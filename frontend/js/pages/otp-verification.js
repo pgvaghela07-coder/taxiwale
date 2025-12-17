@@ -9,10 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Get verification type and data from sessionStorage or URL
   const urlParams = new URLSearchParams(window.location.search);
   const verificationType = urlParams.get("type") || "login"; // signup or login
-  const userId = sessionStorage.getItem("signupUserId");
+  const userId = sessionStorage.getItem("signupUserId") || sessionStorage.getItem("otpUserId");
   const mobile =
     sessionStorage.getItem("signupMobile") ||
     sessionStorage.getItem("currentMobile");
+
+  // Check if we have required data, if not redirect back to login
+  if (!userId && !mobile) {
+    console.error("Missing user information - redirecting to login");
+    alert("Session expired. Please try again.");
+    window.location.href = "index.html";
+    return;
+  }
 
   // Update subtitle based on verification type
   const otpSubtitle = document.getElementById("otpSubtitle");
@@ -20,6 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
     otpSubtitle.textContent = `Enter the OTP sent to ${
       mobile || "your mobile number"
     }`;
+  } else if (mobile) {
+    // Show masked mobile number for login
+    const maskedMobile = mobile.length > 4 
+      ? `****${mobile.slice(-4)}` 
+      : mobile;
+    otpSubtitle.textContent = `Enter the OTP sent to ${maskedMobile}`;
   }
 
   // Format OTP input (only numbers)
@@ -96,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.removeItem("signupUserId");
         sessionStorage.removeItem("signupMobile");
         sessionStorage.removeItem("currentMobile");
+        sessionStorage.removeItem("otpUserId");
 
         // IMPORTANT: Fetch fresh user data from API after login to get latest verification status
         try {
@@ -191,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update userId if returned
         if (response.userId) {
           sessionStorage.setItem("signupUserId", response.userId);
+          sessionStorage.setItem("otpUserId", response.userId);
         }
 
         // Show OTP popup if OTP is provided (development mode)
