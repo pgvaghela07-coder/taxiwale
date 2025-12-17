@@ -35,7 +35,6 @@ const allowedOrigins = [
   "http://127.0.0.1:8000",
   "https://taxiwalepartners.com", // Backend domain
   "https://www.taxiwalepartners.com", // Your frontend added
-  "https://www.taxiwalepartners.com/frontend/pages", // In case routing needs it
   "https://ranaak.com", // Frontend domain
   "https://www.ranaak.com", // Frontend domain with www
 ];
