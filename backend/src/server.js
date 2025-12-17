@@ -20,7 +20,7 @@ const app = express();
 const server = http.createServer(app);
 
 // --------------- Allowed Origins ---------------
-const allowedOrigins = [
+let allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:5502",
@@ -33,28 +33,27 @@ const allowedOrigins = [
   "http://127.0.0.1:8080",
   "http://localhost:8000",
   "http://127.0.0.1:8000",
-  "https://taxiwalepartners.com", // Backend domain
-  "https://www.taxiwalepartners.com", // Your frontend added
-  "https://ranaak.com", // Frontend domain
-  "https://www.ranaak.com", // Frontend domain with www
+  "https://taxiwalepartners.com",
+  "https://www.taxiwalepartners.com",
+  "https://ranaak.com",
+  "https://www.ranaak.com"
 ];
 
+// Add FRONTEND_URL from env if defined
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
+
+// Remove duplicates to prevent CORS issues
+allowedOrigins = [...new Set(allowedOrigins)];
 
 // --------------- Global CORS Middleware ---------------
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, Postman, or file://)
+      // Allow requests with no origin (Postman, mobile apps, file://)
       if (!origin) return callback(null, true);
-      
-      // Allow localhost and 127.0.0.1 on any port for development
-      if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
-        return callback(null, true);
-      }
-      
+
       if (allowedOrigins.includes(origin)) return callback(null, true);
 
       console.log("❌ CORS Blocked:", origin);
@@ -65,9 +64,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// Note: OPTIONS requests are handled by CORS middleware above
-// Don't add explicit OPTIONS handler as it can cause duplicate CORS headers
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -124,13 +120,10 @@ app.get("/", (req, res) => {
 // Error Handler
 app.use(errorHandler);
 
-// --------------- Start Server with Auto Free Port ---------------
-
-
+// --------------- Start Server ---------------
 const PORT = process.env.PORT || 6301;
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Accessible on http://localhost:${PORT}`);
 });
-
