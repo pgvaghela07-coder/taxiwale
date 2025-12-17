@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showOTPPopup(response.otp, mobileNumber);
         } else {
           // Redirect to OTP verification
-          window.location.href = "otp-verification.html?type=login";
+          window.location.href = "/pages/otp-verification.html?type=login";
         }
       } else {
         document.getElementById("otpMobileError").textContent =
@@ -295,7 +295,7 @@ function showOTPPopup(otp, mobile) {
   const redirectToOTPPage = () => {
     closeOTPPopup();
     // Redirect to OTP verification after closing
-    window.location.href = "otp-verification.html?type=login";
+    window.location.href = "/pages/otp-verification.html?type=login";
   };
 
   // Set OTP and mobile

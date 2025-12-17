@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!userId && !mobile) {
     console.error("Missing user information - redirecting to login");
     alert("Session expired. Please try again.");
-    window.location.href = "index.html";
+    window.location.href = "/pages/index.html";
     return;
   }
 
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "✅ Phone number verified successfully!",
             "Account activated.",
             () => {
-              window.location.href = "dashboard.html";
+              window.location.href = "/pages/dashboard.html";
             }
           );
         }
@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
           hideLanguagePopup();
 
           // Redirect to journey page after language selection
-          window.location.href = "account-journey.html";
+          window.location.href = "/pages/account-journey.html";
         } else {
           alert("⚠️ Please select a language to continue");
         }
