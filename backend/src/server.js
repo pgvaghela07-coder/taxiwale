@@ -19,33 +19,19 @@ connectDB().catch((err) => {
 const app = express();
 const server = http.createServer(app);
 
-// --------------- Allowed Origins ---------------
-let allowedOrigins = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:5502",
-  "http://127.0.0.1:5502",
-  "http://localhost:5000",
-  "http://127.0.0.1:5000",
-  "http://localhost:6300",
-  "http://127.0.0.1:6300",
-  "http://localhost:8080",
-  "http://127.0.0.1:8080",
-  "http://localhost:8000",
-  "http://127.0.0.1:8000",
-  "https://taxiwalepartners.com",
-  "https://www.taxiwalepartners.com",
-  "https://ranaak.com",
-  "https://www.ranaak.com"
-];
+const corsOptions = {
+  origin: 'https://taxiwalepartners.com/', // Allow only this origin
+  methods: ['GET', 'POST'], // Allow only certain methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+};
+
+app.options('*', cors(corsOptions));
+
 
 // Add FRONTEND_URL from env if defined
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
-
-// Remove duplicates to prevent CORS issues
-allowedOrigins = [...new Set(allowedOrigins)];
 
 // --------------- Global CORS Middleware ---------------
 app.use(
