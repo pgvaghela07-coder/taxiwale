@@ -19,36 +19,10 @@ connectDB().catch((err) => {
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  "https://taxiwalepartners.com",
-  "https://www.taxiwalepartners.com"
-];
-
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.error("❌ CORS Blocked:", origin);
-      callback(new Error("CORS not allowed"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Preflight support
-app.options("*", cors());
-
+app.use(cors({
+  origin: "https://taxiwalepartners.com",
+  credentials: true
+}));
 
 
 // Add FRONTEND_URL from env if defined
