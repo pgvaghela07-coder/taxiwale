@@ -51,66 +51,7 @@ async function findAvailablePort(host = "localhost") {
 }
 
 function getApiBaseUrl() {
-  // ✅ PRODUCTION FIX - ranaak.com backend
-  if (
-    window.location.hostname === "ranaak.com" ||
-    window.location.hostname === "www.ranaak.com"
-  ) {
-    return "https://ranaak.com/api";
-  }
-
-  // ✅ PRODUCTION FIX - taxiwalepartners.com backend
-  if (
-    window.location.hostname === "taxiwalepartners.com" ||
-    window.location.hostname === "www.taxiwalepartners.com"
-  ) {
-    return "https://taxiwalepartners.com/api";
-  }
-
-  // Check localStorage - but ignore localhost URLs (use production instead)
-  const storedUrl = localStorage.getItem("API_BASE_URL");
-  if (storedUrl && !storedUrl.includes("localhost") && !storedUrl.includes("127.0.0.1")) {
-    // Only use stored URL if it's not localhost (allow custom production URLs)
-    return storedUrl;
-  }
-  // Auto-detect environment
-  const currentHost = window.location.hostname;
-  const currentProtocol = window.location.protocol;
-  const isLocalhost =
-    currentHost === "localhost" || currentHost === "127.0.0.1";
-  const isFileProtocol = currentProtocol === "file:";
-  const isLocalNetwork =
-    currentHost.startsWith("192.168.") ||
-    currentHost.startsWith("10.") ||
-    currentHost.startsWith("172.16.") ||
-    currentHost.startsWith("172.17.") ||
-    currentHost.startsWith("172.18.") ||
-    currentHost.startsWith("172.19.") ||
-    currentHost.startsWith("172.20.") ||
-    currentHost.startsWith("172.21.") ||
-    currentHost.startsWith("172.22.") ||
-    currentHost.startsWith("172.23.") ||
-    currentHost.startsWith("172.24.") ||
-    currentHost.startsWith("172.25.") ||
-    currentHost.startsWith("172.26.") ||
-    currentHost.startsWith("172.27.") ||
-    currentHost.startsWith("172.28.") ||
-    currentHost.startsWith("172.29.") ||
-    currentHost.startsWith("172.30.") ||
-    currentHost.startsWith("172.31.");
-
-  // For localhost or file:// protocol: use ranaak.com backend (production)
-  if (isLocalhost || isFileProtocol) {
-    // Use production backend at ranaak.com
-    return "https://ranaak.com/api";
-  }
-
-  // Local network: use ranaak.com backend (production)
-  if (isLocalNetwork) {
-    return "https://ranaak.com/api";
-  }
-
-  // Production: Use ranaak.com backend
+  // 🔥 Always use backend domain (production)
   return "https://ranaak.com/api";
 }
 
