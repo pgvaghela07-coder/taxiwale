@@ -1508,7 +1508,7 @@ async function handleVehicleSubmit(event) {
   if (!token) {
     showAlertModal("Please login first to post a vehicle");
     setTimeout(() => {
-      window.location.href = "index.html";
+      window.location.href = "/pages/index.html";
     }, 2000);
     return;
   }
@@ -1546,7 +1546,7 @@ async function handleVehicleSubmit(event) {
 
     // Redirect after 2 seconds
     setTimeout(() => {
-      window.location.href = "dashboard.html";
+      window.location.href = "/pages/dashboard.html";
     }, 2000);
   } catch (error) {
     console.error("❌ Error creating vehicle:", error);

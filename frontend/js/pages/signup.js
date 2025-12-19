@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           // Redirect to OTP verification after a short delay
           setTimeout(() => {
-            window.location.href = "otp-verification.html?type=signup";
+            window.location.href = "/pages/otp-verification.html?type=signup";
           }, 1000);
         }
       } else {
@@ -318,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const redirectToOTPPage = () => {
       closeOTPPopup();
       // Immediate redirect without delay
-      window.location.href = "otp-verification.html?type=signup";
+      window.location.href = "/pages/otp-verification.html?type=signup";
     };
 
     // Set OTP and mobile

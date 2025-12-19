@@ -67,7 +67,7 @@ async function checkVerificationStatus() {
         sessionStorage.removeItem("verificationSkippedUntil");
         // Redirect to verified success page
         setTimeout(() => {
-          window.location.href = "verified_success.html";
+          window.location.href = "/pages/verified_success.html";
         }, 1500);
       }
     } else {
@@ -81,7 +81,7 @@ async function checkVerificationStatus() {
       if (aadhaarVerified && dlVerified) {
         sessionStorage.setItem("verified", "true");
         setTimeout(() => {
-          window.location.href = "dashboard.html";
+          window.location.href = "/pages/dashboard.html";
         }, 1500);
       }
     }
@@ -136,7 +136,7 @@ function handleAadhaarVerification() {
   }
 
   // Redirect to Aadhaar verification page
-  window.location.href = "verify-aadhaar.html";
+  window.location.href = "/pages/verify-aadhaar.html";
 }
 
 // ===== DRIVING LICENSE VERIFICATION =====
@@ -153,7 +153,7 @@ function handleLicenseVerification() {
   }
 
   // Redirect to DL verification page
-  window.location.href = "verify-dl.html";
+  window.location.href = "/pages/verify-dl.html";
 }
 
 // ===== CHECK IF BOTH VERIFIED =====
@@ -175,7 +175,7 @@ function checkIfBothVerified() {
       // Clear skip flags
       sessionStorage.removeItem("verificationSkipped");
       sessionStorage.removeItem("verificationSkippedUntil");
-      window.location.href = "dashboard.html";
+      window.location.href = "/pages/dashboard.html";
     }, 2000);
   } else {
     // Show individual success message
@@ -240,7 +240,7 @@ function handleContinueAnyway() {
     sessionStorage.setItem("verified", "false");
 
     // Redirect to dashboard with warning
-    window.location.href = "dashboard.html";
+    window.location.href = "/pages/dashboard.html";
   }, 1500);
 }
 

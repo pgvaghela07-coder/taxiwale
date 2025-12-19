@@ -314,10 +314,10 @@ function handlePrimaryAction() {
 
   if (profilePending) {
     // Redirect to profile completion
-    window.location.href = "profile-completion.html";
+    window.location.href = "/pages/profile-completion.html";
   } else if (docsPending) {
     // Redirect to verification
-    window.location.href = "verification.html";
+    window.location.href = "/pages/verification.html";
   }
 }
 
@@ -502,7 +502,7 @@ function updateVerificationPopupStatus(aadhaarVerified, dlVerified) {
 
 // ===== VERIFICATION POPUP FUNCTIONS =====
 function goToVerification() {
-  window.location.href = "verification.html";
+  window.location.href = "/pages/verification.html";
 }
 
 function skipVerificationForNow() {
@@ -566,15 +566,15 @@ function updateMainContent(tabName) {
       break;
     case "features":
       // Redirect to separate features page
-      window.location.href = "features.html";
+      window.location.href = "/pages/features.html";
       return;
     case "bookings":
       // Redirect to separate my-bookings page
-      window.location.href = "my-bookings.html";
+      window.location.href = "/pages/my-bookings.html";
       return;
     case "profile":
       // Redirect to separate profile page
-      window.location.href = "profile.html";
+      window.location.href = "/pages/profile.html";
       return;
   }
 
@@ -1321,7 +1321,7 @@ function navigateToTab(tabName) {
   // Store the target tab name in session storage
   sessionStorage.setItem("targetTab", tabName);
   // Navigate to dashboard
-  window.location.href = "dashboard.html";
+  window.location.href = "/pages/dashboard.html";
 }
 
 // ===== FLOATING ACTION BUTTON =====
@@ -2356,7 +2356,7 @@ function handleUploadBooking() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else {
     // Navigate to post booking page
-    window.location.href = "post-booking.html";
+    window.location.href = "/pages/post-booking.html";
   }
 }
 
@@ -2371,7 +2371,7 @@ function handleUploadVehicle() {
   closeFABPopup();
   console.log("Opening Upload Free Vehicle form...");
   // Navigate to post vehicle page
-  window.location.href = "post-vehicle.html";
+  window.location.href = "/pages/post-vehicle.html";
 }
 
 // Close on Escape key
@@ -3771,5 +3771,5 @@ function openUserProfile(userId) {
   }
   
   // Navigate to user profile page with userId
-  window.location.href = `user-profile.html?userId=${encodeURIComponent(userId)}`;
+  window.location.href = `/pages/user-profile.html?userId=${encodeURIComponent(userId)}`;
 }

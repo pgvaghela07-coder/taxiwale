@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "✅ Phone number verified successfully!",
             "Account activated.",
             () => {
-              window.location.href = "dashboard.html";
+              window.location.href = "/pages/dashboard.html";
             }
           );
         }
@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
           hideLanguagePopup();
 
           // Redirect to journey page after language selection
-          window.location.href = "account-journey.html";
+          window.location.href = "/pages/account-journey.html";
         } else {
           alert("⚠️ Please select a language to continue");
         }

@@ -93,7 +93,7 @@ function showOTPPopup(otp, mobile) {
     isRedirecting = true;
     closeOTPPopup();
     // Redirect to OTP input page
-    window.location.href = "verify-dl-otp.html";
+    window.location.href = "/pages/verify-dl-otp.html";
   };
 
   // Clear any existing timeout

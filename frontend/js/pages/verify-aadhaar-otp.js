@@ -233,12 +233,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dlVerified) {
         // Both verified, redirect to success page
         showSuccessModal("✅ Aadhaar Verified!", "Both Aadhaar and Driving License are now verified.", () => {
-          window.location.href = "verified_success.html";
+          window.location.href = "/pages/verified_success.html";
         });
       } else {
         // Only Aadhaar verified, show success and redirect to verification page
         showSuccessModal("✅ Aadhaar Verified!", "Your Aadhaar has been verified successfully.", () => {
-          window.location.href = "verification.html";
+          window.location.href = "/pages/verification.html";
         });
       }
     } catch (error) {

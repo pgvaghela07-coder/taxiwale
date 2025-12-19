@@ -100,7 +100,7 @@ function switchBookingTab(tab) {
 
 // Create New Booking
 function createNewBooking() {
-  window.location.href = "post-booking.html";
+  window.location.href = "/pages/post-booking.html";
 }
 
 // Edit Booking
@@ -819,7 +819,7 @@ async function loadMyBookings(status = "pending") {
         ${
           isAuthError
             ? `
-        <button onclick="window.location.href='index.html'" style="padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #ff9900; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px; margin-left: 8px;">
+        <button onclick="window.location.href='/pages/index.html'" style="padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #ff9900; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px; margin-left: 8px;">
           🔐 Login
         </button>
         `
@@ -1766,7 +1766,7 @@ async function loadMyVehicles(status = "pending") {
         ${
           isAuthError
             ? `
-        <button onclick="window.location.href='index.html'" style="padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #ff9900; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px; margin-left: 8px;">
+        <button onclick="window.location.href='/pages/index.html'" style="padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #ff9900; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 8px; margin-left: 8px;">
           🔐 Login
         </button>
         `
@@ -2500,7 +2500,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!token) {
     console.error("❌ [DOMContentLoaded] No authentication token found");
     alert("⚠️ Please login first");
-    window.location.href = "index.html";
+    window.location.href = "/pages/index.html";
     return;
   }
   console.log("✅ [DOMContentLoaded] Authentication token found");

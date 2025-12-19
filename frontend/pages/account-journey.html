@@ -546,13 +546,13 @@
         if (profileComplete) {
           // Redirect to verification page
           setTimeout(() => {
-            window.location.href = "verification.html";
+            window.location.href = "/pages/verification.html";
           }, 500);
         } else {
           // Redirect to profile completion
           sessionStorage.setItem("fromSignup", "true");
           setTimeout(() => {
-            window.location.href = "profile-completion.html";
+            window.location.href = "/pages/profile-completion.html";
           }, 500);
         }
       }
@@ -591,10 +591,10 @@
         const profileComplete = step2IsCompleted || step3IsCurrent || profileCompleteFromSession || profileCompleteFromUser;
         
         if (profileComplete) {
-          window.location.href = "verification.html";
+          window.location.href = "/pages/verification.html";
         } else {
           sessionStorage.setItem("fromSignup", "true");
-          window.location.href = "profile-completion.html";
+          window.location.href = "/pages/profile-completion.html";
         }
       }
 
@@ -616,7 +616,7 @@
         
         // Redirect to dashboard
         setTimeout(() => {
-          window.location.href = "dashboard.html";
+          window.location.href = "/pages/dashboard.html";
         }, 300);
       }
 

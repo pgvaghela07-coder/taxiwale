@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Set flag to indicate profile is complete
         sessionStorage.setItem("profileComplete", "true");
         // Directly redirect to journey page (no browser popup)
-        window.location.href = "account-journey.html";
+        window.location.href = "/pages/account-journey.html";
       } else {
         showError("submitError", response.message || "Failed to save profile");
       }
@@ -152,9 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (confirm("Are you sure you want to skip? You can complete your profile later.")) {
       const fromSignup = sessionStorage.getItem("fromSignup");
       if (fromSignup === "true") {
-        window.location.href = "verification.html";
+        window.location.href = "/pages/verification.html";
       } else {
-        window.location.href = "dashboard.html";
+        window.location.href = "/pages/dashboard.html";
       }
     }
   });

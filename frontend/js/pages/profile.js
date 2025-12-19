@@ -68,7 +68,7 @@ window.performLogout = function performLogout() {
       console.log("Storage cleared, redirecting to login page...");
       
       // Force redirect to login page
-      window.location.href = "index.html";
+      window.location.href = "/pages/index.html";
       
       // Fallback redirect after short delay
       setTimeout(() => {
@@ -127,7 +127,7 @@ window.deleteAccount = function deleteAccount() {
 window.editAndVerify = function editAndVerify() {
   console.log("Opening Edit & Verify...");
   // Redirect to verification page
-  window.location.href = 'verification.html';
+  window.location.href = '/pages/verification.html';
 }
 
 // View Profile - Make globally accessible
@@ -677,7 +677,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (confirm("Are you sure you want to logout?")) {
             localStorage.clear();
             sessionStorage.clear();
-            window.location.href = "index.html";
+            window.location.href = "/pages/index.html";
           }
         }
       });

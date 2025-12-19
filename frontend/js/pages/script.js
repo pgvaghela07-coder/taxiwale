@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // ALWAYS redirect to dashboard after login
         // Dashboard will handle restrictions/warnings if profile/docs not verified
-        window.location.href = "dashboard.html";
+        window.location.href = "/pages/dashboard.html";
       } else {
         document.getElementById("passwordError").textContent =
           response.message || "Invalid mobile number or password";
@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showOTPPopup(response.otp, mobileNumber);
         } else {
           // Redirect to OTP verification
-          window.location.href = "otp-verification.html?type=login";
+          window.location.href = "/pages/otp-verification.html?type=login";
         }
       } else {
         document.getElementById("otpMobileError").textContent =
@@ -290,7 +290,7 @@ function showOTPPopup(otp, mobile) {
   const redirectToOTPPage = () => {
     closeOTPPopup();
     // Redirect to OTP verification after closing
-    window.location.href = "otp-verification.html?type=login";
+    window.location.href = "/pages/otp-verification.html?type=login";
   };
 
   // Set OTP and mobile
@@ -416,7 +416,7 @@ async function showOTPAlert(mobileNumber) {
 
         // ALWAYS redirect to dashboard after login
         // Dashboard will handle restrictions/warnings if profile/docs not verified
-        window.location.href = "dashboard.html";
+        window.location.href = "/pages/dashboard.html";
       } else {
         alert("❌ Invalid OTP. Please try again.");
       }
@@ -506,10 +506,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (verificationType === "login" || fromSignup === false) {
       // Login flow: Go directly to dashboard
-      window.location.href = "dashboard.html";
+      window.location.href = "/pages/dashboard.html";
     } else {
       // Signup flow: Go to journey page
-      window.location.href = "account-journey.html";
+      window.location.href = "/pages/account-journey.html";
     }
   });
 
@@ -525,10 +525,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (verificationType === "login" || fromSignup === false) {
         // Login flow: Go directly to dashboard
-        window.location.href = "dashboard.html";
+        window.location.href = "/pages/dashboard.html";
       } else {
         // Signup flow: Go to journey page
-        window.location.href = "account-journey.html";
+        window.location.href = "/pages/account-journey.html";
       }
     } else {
       alert("Please select a language to continue");
@@ -551,10 +551,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (verificationType === "login" || fromSignup === false) {
         // Login flow: Go directly to dashboard
-        window.location.href = "dashboard.html";
+        window.location.href = "/pages/dashboard.html";
       } else {
         // Signup flow: Go to journey page
-        window.location.href = "account-journey.html";
+        window.location.href = "/pages/account-journey.html";
       }
     }
   });
@@ -667,7 +667,7 @@ function clearVerificationData() {
 function redirectToVerification() {
   // Add a small delay for smooth transition
   setTimeout(() => {
-    window.location.href = "verification.html";
+    window.location.href = "/pages/verification.html";
   }, 500);
 }
 

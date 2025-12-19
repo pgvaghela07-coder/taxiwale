@@ -593,11 +593,11 @@ function handleBackButton(e) {
   
   try {
     // Always redirect to dashboard
-    window.location.href = "./dashboard.html";
+    window.location.href = "/pages/dashboard.html";
   } catch (error) {
     console.error("Error handling back button:", error);
     // Fallback to dashboard on any error
-    window.location.href = "./dashboard.html";
+    window.location.href = "/pages/dashboard.html";
   }
 }
 
@@ -694,7 +694,7 @@ function openReviewModal() {
   if (!token) {
     alert("Please login to write a review");
     // Redirect to login or show login modal
-    window.location.href = "index.html";
+    window.location.href = "/pages/index.html";
     return;
   }
 
