@@ -245,17 +245,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.success) {
-        // Store userId if provided (needed for OTP verification)
-        if (response.userId) {
-          sessionStorage.setItem("otpUserId", response.userId);
-        }
-        
         // Show OTP popup if OTP is provided (development mode)
         if (response.otp) {
           showOTPPopup(response.otp, mobileNumber);
         } else {
           // Redirect to OTP verification
-          window.location.href = "/pages/otp-verification.html?type=login";
+          window.location.href = "otp-verification.html?type=login";
         }
       } else {
         document.getElementById("otpMobileError").textContent =
@@ -295,7 +290,7 @@ function showOTPPopup(otp, mobile) {
   const redirectToOTPPage = () => {
     closeOTPPopup();
     // Redirect to OTP verification after closing
-    window.location.href = "/pages/otp-verification.html?type=login";
+    window.location.href = "otp-verification.html?type=login";
   };
 
   // Set OTP and mobile

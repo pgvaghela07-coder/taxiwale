@@ -365,10 +365,6 @@ class ApiService {
     return this.request("/profile/qr");
   }
 
-  async getPublicProfile(userId) {
-    return this.request(`/profile/public/${userId}`);
-  }
-
   // User search for assignment
   async searchUsers(query) {
     return this.request(`/users/search?q=${encodeURIComponent(query)}`);
@@ -387,32 +383,6 @@ class ApiService {
       method: "POST",
       body: JSON.stringify(dlData),
     });
-  }
-
-  // Review methods
-  async getUserReviews(userId, page = 1, limit = 10) {
-    const query = new URLSearchParams({ page, limit }).toString();
-    return this.request(`/reviews/${userId}/reviews?${query}`);
-  }
-
-  async getRatingSummary(userId) {
-    return this.request(`/reviews/${userId}/rating-summary`);
-  }
-
-  async getPartnerScore(userId) {
-    return this.request(`/reviews/${userId}/partner-score`);
-  }
-
-  async createReview(userId, reviewData) {
-    return this.request(`/reviews/${userId}/review`, {
-      method: "POST",
-      body: JSON.stringify(reviewData),
-    });
-  }
-
-  // User-specific vehicle methods
-  async getUserVehicles(userId) {
-    return this.request(`/vehicles/user/${userId}`);
   }
 
   // Chat methods

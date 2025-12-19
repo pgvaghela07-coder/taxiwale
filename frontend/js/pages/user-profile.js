@@ -587,31 +587,32 @@ function showReviewsError(message) {
 }
 
 // Handle back button click
-function handleBackButton() {
+function handleBackButton(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  
   try {
-    // Check if we have a referrer from the same origin
-    const referrer = document.referrer;
-    
-    // If we have a referrer from the same site, use browser back
-    if (referrer && referrer.includes(window.location.origin)) {
-      window.history.back();
-    } else {
-      // No referrer or external referrer, go to index page (main dashboard)
-      window.location.href = "index.html";
-    }
+    // Always redirect to dashboard
+    window.location.href = "./dashboard.html";
   } catch (error) {
     console.error("Error handling back button:", error);
-    // Fallback to index page on any error
-    window.location.href = "index.html";
+    // Fallback to dashboard on any error
+    window.location.href = "./dashboard.html";
   }
 }
 
 // Setup event listeners
 function setupEventListeners() {
-  // Back button
+  // Back button - use addEventListener for better reliability
   const backBtn = document.getElementById("backBtn");
   if (backBtn) {
-    backBtn.onclick = handleBackButton;
+    // Remove any existing listeners first
+    backBtn.removeEventListener("click", handleBackButton);
+    // Add the event listener
+    backBtn.addEventListener("click", handleBackButton);
+    console.log("✅ Back button event listener attached - will redirect to dashboard");
+  } else {
+    console.error("❌ Back button not found in DOM");
   }
 
   // Pagination buttons
