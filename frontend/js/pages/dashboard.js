@@ -5,6 +5,15 @@ let activeTab = "available";
 const dashboardBookingsMap = new Map(); // Store booking objects by _id
 const dashboardVehiclesMap = new Map(); // Store vehicle objects by _id
 
+// Pagination state for infinite scroll
+let bookingsPagination = {
+  currentPage: 1,
+  totalPages: 1,
+  isLoading: false,
+  hasMore: true,
+  total: 0
+};
+
 // ===== TIME FORMATTING HELPER =====
 /**
  * Formats time difference as relative time string
@@ -682,8 +691,8 @@ function updateMainContent(tabName) {
 }
 
 // ===== LOAD BOOKINGS FROM API =====
-async function loadBookingsFromAPI() {
-  console.log("🔄 loadBookingsFromAPI called");
+async function loadBookingsFromAPI(reset = true) {
+  console.log("🔄 loadBookingsFromAPI called, reset:", reset);
   const container = document.getElementById("bookingCards");
   if (!container) {
     console.warn("⚠️ bookingCards container not found");
@@ -691,13 +700,32 @@ async function loadBookingsFromAPI() {
   }
   console.log("✅ bookingCards container found");
 
-  // Show loading state
-  container.innerHTML = `
-    <div class="loading-bookings" style="text-align: center; padding: 40px; color: #bdbdbd;">
-      <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
-      <p>Loading bookings...</p>
-    </div>
-  `;
+  // Prevent multiple simultaneous loads
+  if (bookingsPagination.isLoading) {
+    console.log("⏸️ Already loading bookings, skipping...");
+    return;
+  }
+
+  // Reset pagination if starting fresh
+  if (reset) {
+    bookingsPagination.currentPage = 1;
+    bookingsPagination.hasMore = true;
+    bookingsPagination.total = 0;
+    container.innerHTML = `
+      <div class="loading-bookings" style="text-align: center; padding: 40px; color: #bdbdbd;">
+        <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+        <p>Loading bookings...</p>
+      </div>
+    `;
+  } else {
+    // Show loading indicator at bottom for pagination
+    const loadingIndicator = document.getElementById("bookingsLoadingIndicator");
+    if (loadingIndicator) {
+      loadingIndicator.style.display = "block";
+    }
+  }
+
+  bookingsPagination.isLoading = true;
 
   try {
     // Check if API service is available
@@ -735,11 +763,15 @@ async function loadBookingsFromAPI() {
       }
     }
 
-    // Request more bookings (increase limit to get all bookings)
-    filters.limit = 100; // Request up to 100 bookings per page
-    filters.page = 1; // Start from first page
+    // Set pagination parameters
+    filters.limit = 20; // 20 bookings per page for infinite scroll
+    // Increment page before API call if loading more (not resetting)
+    if (!reset && bookingsPagination.hasMore) {
+      bookingsPagination.currentPage++;
+    }
+    filters.page = bookingsPagination.currentPage;
 
-    // Fetch ALL bookings from API (active and assigned bookings)
+    // Fetch bookings from API (active and assigned bookings)
     // Backend now returns active + assigned bookings by default (not just active)
     // This shows all available bookings that users can take
     console.log("📤 Calling apiService.getBookings with filters:", filters);
@@ -785,6 +817,19 @@ async function loadBookingsFromAPI() {
 
     console.log("📋 Final bookings extracted:", bookings.length);
     
+    // Update pagination state from response
+    if (response && typeof response.total === 'number') {
+      bookingsPagination.total = response.total;
+      bookingsPagination.totalPages = response.pages || Math.ceil(response.total / 20);
+      bookingsPagination.hasMore = bookingsPagination.currentPage < bookingsPagination.totalPages;
+      console.log("📊 Pagination state:", {
+        currentPage: bookingsPagination.currentPage,
+        totalPages: bookingsPagination.totalPages,
+        total: bookingsPagination.total,
+        hasMore: bookingsPagination.hasMore
+      });
+    }
+    
     // ===== COMPREHENSIVE BOOKINGS CONSOLE LOG =====
     console.log("=".repeat(80));
     console.log("📊 ALL BOOKINGS FROM DATABASE:");
@@ -829,7 +874,9 @@ async function loadBookingsFromAPI() {
     }
 
     // Store bookings in Map for WhatsApp interest functionality
-    dashboardBookingsMap.clear(); // Clear previous data
+    if (reset) {
+      dashboardBookingsMap.clear(); // Clear previous data only on reset
+    }
     bookings.forEach((booking) => {
       if (booking._id) {
         // Convert _id to string to ensure consistent key format
@@ -885,7 +932,36 @@ async function loadBookingsFromAPI() {
         .join("");
       
       if (cardsHTML) {
-        container.innerHTML = cardsHTML;
+        if (reset) {
+          // Replace content on first load
+          container.innerHTML = cardsHTML;
+        } else {
+          // Append new cards for pagination
+          container.insertAdjacentHTML('beforeend', cardsHTML);
+        }
+        
+        // Add or update loading indicator at bottom
+        let loadingIndicator = document.getElementById("bookingsLoadingIndicator");
+        if (!loadingIndicator) {
+          loadingIndicator = document.createElement("div");
+          loadingIndicator.id = "bookingsLoadingIndicator";
+          loadingIndicator.style.cssText = "text-align: center; padding: 20px; color: #bdbdbd; display: none;";
+          container.appendChild(loadingIndicator);
+        }
+        
+        // Update loading indicator based on hasMore
+        if (bookingsPagination.hasMore) {
+          loadingIndicator.innerHTML = `
+            <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
+            <p>Loading more bookings...</p>
+          `;
+        } else {
+          loadingIndicator.innerHTML = `
+            <p style="color: #757575; font-size: 14px;">No more bookings to load</p>
+          `;
+        }
+        loadingIndicator.style.display = "none"; // Hide after loading
+        
         console.log("✅ Successfully rendered", bookings.length, "booking cards");
         console.log("✅ Container ID:", container.id);
         console.log("✅ Cards HTML length:", cardsHTML.length, "characters");
@@ -894,7 +970,7 @@ async function loadBookingsFromAPI() {
         const renderedCards = container.querySelectorAll(".booking-card");
         console.log("✅ Rendered cards count in DOM:", renderedCards.length);
         
-        if (renderedCards.length !== bookings.length) {
+        if (reset && renderedCards.length !== bookings.length) {
           console.warn("⚠️ Mismatch: Expected", bookings.length, "cards but found", renderedCards.length, "in DOM");
         }
       } else {
@@ -915,10 +991,13 @@ async function loadBookingsFromAPI() {
       return;
     }
 
-    // Update results count
+    // Update results count (show total loaded, not just current page)
     if (typeof updateResultsCount === "function") {
-      updateResultsCount(bookings.length);
+      const totalRendered = container.querySelectorAll(".booking-card").length;
+      updateResultsCount(totalRendered);
     }
+    
+    bookingsPagination.isLoading = false;
 
     // Final summary log
     console.log("=".repeat(80));
@@ -934,7 +1013,20 @@ async function loadBookingsFromAPI() {
     if (typeof initFilterSection === "function") {
       initFilterSection();
     }
+    
+    // Hide loading indicator
+    const loadingIndicator = document.getElementById("bookingsLoadingIndicator");
+    if (loadingIndicator) {
+      loadingIndicator.style.display = "none";
+    }
   } catch (error) {
+    bookingsPagination.isLoading = false;
+    
+    // Hide loading indicator on error
+    const loadingIndicator = document.getElementById("bookingsLoadingIndicator");
+    if (loadingIndicator) {
+      loadingIndicator.style.display = "none";
+    }
     console.error("❌ Error loading bookings:", error);
     console.error("❌ Error details:", {
       message: error.message,
@@ -962,6 +1054,16 @@ async function loadBookingsFromAPI() {
   }
 }
 
+// ===== LOAD MORE BOOKINGS (INFINITE SCROLL) =====
+async function loadMoreBookings() {
+  if (bookingsPagination.isLoading || !bookingsPagination.hasMore) {
+    return;
+  }
+  
+  console.log("📜 Loading more bookings - page:", bookingsPagination.currentPage + 1);
+  await loadBookingsFromAPI(false); // false = append, don't reset
+}
+
 // ===== DEBUG HELPER FUNCTION =====
 // Call this from browser console: debugBookings()
 window.debugBookings = function() {
@@ -969,8 +1071,9 @@ window.debugBookings = function() {
   console.log("1. Checking container:", document.getElementById("bookingCards"));
   console.log("2. Checking API service:", typeof apiService);
   console.log("3. Active tab:", activeTab);
-  console.log("4. Calling loadBookingsFromAPI...");
-  loadBookingsFromAPI();
+  console.log("4. Pagination state:", bookingsPagination);
+  console.log("5. Calling loadBookingsFromAPI...");
+  loadBookingsFromAPI(true); // Reset pagination
 };
 
 // ===== LOAD VEHICLES FROM API =====
@@ -2288,6 +2391,19 @@ function handleScroll() {
   }
 
   lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+  
+  // Infinite scroll: Load more bookings when near bottom
+  if (activeTab === "available" && !bookingsPagination.isLoading && bookingsPagination.hasMore) {
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollPosition = scrollTop + windowHeight;
+    
+    // Load more when within 300px of bottom
+    if (scrollPosition >= documentHeight - 300) {
+      console.log("📜 Near bottom, loading more bookings...");
+      loadMoreBookings();
+    }
+  }
 }
 
 function scrollToTop() {

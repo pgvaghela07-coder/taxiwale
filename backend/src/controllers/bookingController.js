@@ -15,7 +15,7 @@ exports.getBookings = async (req, res) => {
       pickupCity,
       dropCity,
       page = 1,
-      limit = 100, // Increased limit to show more bookings
+      limit = 20, // 20 bookings per page for infinite scroll
       sort = "-createdAt",
     } = req.query;
 
