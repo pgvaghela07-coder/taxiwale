@@ -1,7 +1,118 @@
 const Booking = require("../models/Booking");
 const User = require("../models/User");
+const Review = require("../models/Review");
 const mongoose = require("mongoose");
 const emailService = require("../services/emailService");
+
+// Helper function to calculate Partner Score
+function calculatePartnerScore(distribution, totalRatings) {
+  const percentages = {
+    5: ((distribution[5] || 0) / totalRatings) * 100,
+    4: ((distribution[4] || 0) / totalRatings) * 100,
+    3: ((distribution[3] || 0) / totalRatings) * 100,
+    2: ((distribution[2] || 0) / totalRatings) * 100,
+    1: ((distribution[1] || 0) / totalRatings) * 100,
+  };
+
+  let score = 300; // Base score
+  
+  score += percentages[5] * 6;
+  score += percentages[4] * 3;
+  score += percentages[3] * 1;
+  score += percentages[2] * 0.5;
+  
+  if (percentages[1] > 20) {
+    const excessNegative = percentages[1] - 20;
+    score -= excessNegative * 2;
+  }
+  
+  const lowRatings = percentages[1] + percentages[2];
+  if (lowRatings > 30) {
+    const excessLow = lowRatings - 30;
+    score -= excessLow * 1;
+  }
+  
+  const partnerScore = Math.min(900, Math.max(300, Math.round(score)));
+  return partnerScore;
+}
+
+// Helper function to check if user has poor partner score (300-549)
+async function checkPoorPartnerScore(userId) {
+  try {
+    const reviews = await Review.find({
+      reviewedUserId: userId,
+      isVisible: true,
+    });
+
+    const totalRatings = reviews.length;
+    
+    // If less than 5 ratings, consider as poor score
+    if (totalRatings < 5) {
+      return {
+        hasPoorScore: true,
+        message: "This profile have poor partners score. We do not guarantee reliability for advance payments. Please get references before making advance payments."
+      };
+    }
+
+    // Calculate rating distribution
+    const ratingDistribution = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    reviews.forEach(review => {
+      ratingDistribution[review.rating] = (ratingDistribution[review.rating] || 0) + 1;
+    });
+
+    // Calculate Partner Score (300-900 range)
+    const partnerScore = calculatePartnerScore(ratingDistribution, totalRatings);
+
+    // Check if score is between 300-549 (Poor or Very Poor)
+    if (partnerScore >= 300 && partnerScore <= 549) {
+      return {
+        hasPoorScore: true,
+        message: "This profile have poor partners score. We do not guarantee reliability for advance payments. Please get references before making advance payments."
+      };
+    }
+
+    return {
+      hasPoorScore: false,
+      message: null
+    };
+  } catch (error) {
+    console.error("Error checking partner score:", error);
+    return {
+      hasPoorScore: false,
+      message: null
+    };
+  }
+}
+
+// Helper function to add warning note to booking
+async function addWarningNoteToBooking(booking) {
+  if (booking.postedBy && booking.postedBy._id) {
+    const warningCheck = await checkPoorPartnerScore(booking.postedBy._id);
+    if (warningCheck.hasPoorScore) {
+      booking = booking.toObject ? booking.toObject() : booking;
+      booking.warningNote = warningCheck.message;
+      return booking;
+    }
+  }
+  return booking;
+}
+
+// Helper function to add warning notes to multiple bookings
+async function addWarningNotesToBookings(bookings) {
+  const bookingsWithWarnings = await Promise.all(
+    bookings.map(async (booking) => {
+      return await addWarningNoteToBooking(booking);
+    })
+  );
+  return bookingsWithWarnings;
+}
 
 // @desc    Get all bookings
 // @route   GET /api/bookings
@@ -49,13 +160,16 @@ exports.getBookings = async (req, res) => {
     
     console.log(`📊 [getBookings] Found ${bookings.length} bookings (total: ${total}) with filter:`, filter);
 
+    // Add warning notes for bookings with poor partner scores
+    const bookingsWithWarnings = await addWarningNotesToBookings(bookings);
+
     res.json({
       success: true,
       count: bookings.length,
       total,
       page: parseInt(page),
       pages: Math.ceil(total / parseInt(limit)),
-      data: bookings,
+      data: bookingsWithWarnings,
     });
   } catch (error) {
     console.error("Get Bookings Error:", error);
@@ -161,13 +275,16 @@ exports.getMyBookings = async (req, res) => {
       postedBy: b.postedBy?._id
     })));
     
+    // Add warning notes for bookings with poor partner scores
+    const bookingsWithWarnings = await addWarningNotesToBookings(bookings);
+    
     res.json({
       success: true,
       count: bookings.length,
       total,
       page: parseInt(page),
       pages: Math.ceil(total / parseInt(limit)),
-      data: bookings,
+      data: bookingsWithWarnings,
     });
   } catch (error) {
     console.error("❌ [getMyBookings] Error:", error);
@@ -203,9 +320,12 @@ exports.getBooking = async (req, res) => {
     // Log customRequirement for debugging
     console.log("📝 [getBooking] customRequirement:", booking.customRequirement);
 
+    // Add warning note if user has poor partner score
+    const bookingWithWarning = await addWarningNoteToBooking(booking);
+
     res.json({
       success: true,
-      data: booking,
+      data: bookingWithWarning,
     });
   } catch (error) {
     console.error("Get Booking Error:", error);
@@ -252,10 +372,13 @@ exports.createBooking = async (req, res) => {
         }
       }
 
+      // Add warning note if user has poor partner score
+      const bookingWithWarning = await addWarningNoteToBooking(booking);
+
       return res.status(201).json({
         success: true,
         message: "Booking created successfully",
-        data: booking,
+        data: bookingWithWarning,
       });
     } catch (error) {
       console.error(`Create Booking Error (attempt ${retryCount + 1}):`, error);
@@ -291,10 +414,12 @@ exports.createBooking = async (req, res) => {
             };
             const booking = await Booking.create(bookingData);
             await booking.populate("postedBy", "name mobile email");
+            // Add warning note if user has poor partner score
+            const bookingWithWarning = await addWarningNoteToBooking(booking);
             return res.status(201).json({
               success: true,
               message: "Booking created successfully",
-              data: booking,
+              data: bookingWithWarning,
             });
           } catch (finalError) {
             console.error("❌ Final attempt also failed:", finalError);
@@ -350,10 +475,13 @@ exports.updateBooking = async (req, res) => {
       runValidators: true,
     }).populate("postedBy", "name mobile");
 
+    // Add warning note if user has poor partner score
+    const bookingWithWarning = await addWarningNoteToBooking(booking);
+
     res.json({
       success: true,
       message: "Booking updated successfully",
-      data: booking,
+      data: bookingWithWarning,
     });
   } catch (error) {
     console.error("Update Booking Error:", error);
@@ -435,10 +563,16 @@ exports.assignBooking = async (req, res) => {
     booking.assignedAt = new Date();
     await booking.save();
 
+    // Populate postedBy for warning check
+    await booking.populate("postedBy", "name mobile");
+
+    // Add warning note if user has poor partner score
+    const bookingWithWarning = await addWarningNoteToBooking(booking);
+
     res.json({
       success: true,
       message: "Booking assigned successfully",
-      data: booking,
+      data: bookingWithWarning,
     });
   } catch (error) {
     console.error("Assign Booking Error:", error);
@@ -485,10 +619,16 @@ exports.closeBooking = async (req, res) => {
     }
     await booking.save();
 
+    // Populate postedBy for warning check
+    await booking.populate("postedBy", "name mobile");
+
+    // Add warning note if user has poor partner score
+    const bookingWithWarning = await addWarningNoteToBooking(booking);
+
     res.json({
       success: true,
       message: "Booking closed successfully",
-      data: booking,
+      data: bookingWithWarning,
     });
   } catch (error) {
     console.error("Close Booking Error:", error);
@@ -520,10 +660,16 @@ exports.addComment = async (req, res) => {
     });
     await booking.save();
 
+    // Populate postedBy for warning check
+    await booking.populate("postedBy", "name mobile");
+
+    // Add warning note if user has poor partner score
+    const bookingWithWarning = await addWarningNoteToBooking(booking);
+
     res.json({
       success: true,
       message: "Comment added successfully",
-      data: booking,
+      data: bookingWithWarning,
     });
   } catch (error) {
     console.error("Add Comment Error:", error);
