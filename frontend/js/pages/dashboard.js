@@ -721,7 +721,12 @@ async function loadBookingsFromAPI(reset = true) {
     // Show loading indicator at bottom for pagination
     const loadingIndicator = document.getElementById("bookingsLoadingIndicator");
     if (loadingIndicator) {
+      // Show indicator with minimal layout shift
       loadingIndicator.style.display = "block";
+      loadingIndicator.style.visibility = "visible";
+      loadingIndicator.style.height = "auto";
+      loadingIndicator.style.padding = "20px";
+      loadingIndicator.style.minHeight = "60px";
     }
   }
 
@@ -936,16 +941,64 @@ async function loadBookingsFromAPI(reset = true) {
           // Replace content on first load
           container.innerHTML = cardsHTML;
         } else {
+          // Save scroll position before appending new content
+          const scrollTopBefore = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollHeightBefore = document.documentElement.scrollHeight;
+          
           // Append new cards for pagination
           container.insertAdjacentHTML('beforeend', cardsHTML);
+          
+          // Restore scroll position after content is added
+          // Use multiple requestAnimationFrame calls to ensure DOM is fully updated
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const scrollHeightAfter = document.documentElement.scrollHeight;
+              
+              // Maintain scroll position by adjusting for new content
+              // If user was near bottom, keep them near bottom
+              // Otherwise, maintain their relative position
+              const wasNearBottom = (scrollTopBefore + window.innerHeight) >= (scrollHeightBefore - 300);
+              
+              if (wasNearBottom) {
+                // User was near bottom, keep them near bottom (but not exactly at bottom)
+                // Scroll to a position that shows the new content
+                const newScrollTop = scrollHeightAfter - window.innerHeight - 100;
+                window.scrollTo({
+                  top: Math.max(0, newScrollTop),
+                  behavior: 'auto' // Instant scroll, no animation
+                });
+              } else {
+                // User was in middle/top, maintain their exact scroll position
+                window.scrollTo({
+                  top: scrollTopBefore,
+                  behavior: 'auto' // Instant scroll, no animation
+                });
+              }
+              
+              // Double-check after a small delay to handle any layout shifts
+              setTimeout(() => {
+                if (!wasNearBottom) {
+                  const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                  if (Math.abs(currentScroll - scrollTopBefore) > 50) {
+                    // Scroll position changed unexpectedly, restore it
+                    window.scrollTo({
+                      top: scrollTopBefore,
+                      behavior: 'auto'
+                    });
+                  }
+                }
+              }, 100);
+            });
+          });
         }
         
         // Add or update loading indicator at bottom
+        // Always keep it in DOM to prevent layout shifts
         let loadingIndicator = document.getElementById("bookingsLoadingIndicator");
         if (!loadingIndicator) {
           loadingIndicator = document.createElement("div");
           loadingIndicator.id = "bookingsLoadingIndicator";
-          loadingIndicator.style.cssText = "text-align: center; padding: 20px; color: #bdbdbd; display: none;";
+          loadingIndicator.style.cssText = "text-align: center; padding: 20px; color: #bdbdbd; min-height: 60px;";
           container.appendChild(loadingIndicator);
         }
         
@@ -955,12 +1008,22 @@ async function loadBookingsFromAPI(reset = true) {
             <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
             <p>Loading more bookings...</p>
           `;
+          // Keep it visible but with minimal height when not actively loading
+          loadingIndicator.style.display = "block";
+          loadingIndicator.style.visibility = "hidden";
+          loadingIndicator.style.height = "0";
+          loadingIndicator.style.padding = "0";
+          loadingIndicator.style.minHeight = "0";
         } else {
           loadingIndicator.innerHTML = `
             <p style="color: #757575; font-size: 14px;">No more bookings to load</p>
           `;
+          loadingIndicator.style.display = "block";
+          loadingIndicator.style.visibility = "visible";
+          loadingIndicator.style.height = "auto";
+          loadingIndicator.style.padding = "20px";
+          loadingIndicator.style.minHeight = "60px";
         }
-        loadingIndicator.style.display = "none"; // Hide after loading
         
         console.log("✅ Successfully rendered", bookings.length, "booking cards");
         console.log("✅ Container ID:", container.id);
