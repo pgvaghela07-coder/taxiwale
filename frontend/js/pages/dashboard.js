@@ -769,12 +769,28 @@ async function loadBookingsFromAPI(reset = true) {
     }
 
     // Set pagination parameters
-    filters.limit = 20; // 20 bookings per page for infinite scroll
-    // Increment page before API call if loading more (not resetting)
-    if (!reset && bookingsPagination.hasMore) {
-      bookingsPagination.currentPage++;
+    // First load: 100 bookings, then 20 per page for pagination
+    if (reset) {
+      filters.limit = 100; // Initial load: 100 bookings
+      filters.page = 1;
+    } else {
+      filters.limit = 20; // Subsequent loads: 20 bookings per page
+      // Calculate the correct page number for backend
+      // After loading 100 items on page 1, we need to skip 100 items
+      // Backend calculates: skip = (page - 1) * limit
+      // So for skip = 100 with limit = 20: page = 6
+      // Then page 7, 8, etc.
+      if (bookingsPagination.hasMore) {
+        // Calculate page number: first page (100 items) + subsequent pages (20 items each)
+        // If currentPage is 1 (after initial load), next page should be 6 (to skip 100 items)
+        if (bookingsPagination.currentPage === 1) {
+          bookingsPagination.currentPage = Math.floor(100 / 20) + 1; // = 6
+        } else {
+          bookingsPagination.currentPage++;
+        }
+      }
+      filters.page = bookingsPagination.currentPage;
     }
-    filters.page = bookingsPagination.currentPage;
 
     // Fetch bookings from API (active and assigned bookings)
     // Backend now returns active + assigned bookings by default (not just active)
@@ -825,13 +841,25 @@ async function loadBookingsFromAPI(reset = true) {
     // Update pagination state from response
     if (response && typeof response.total === 'number') {
       bookingsPagination.total = response.total;
-      bookingsPagination.totalPages = response.pages || Math.ceil(response.total / 20);
+      
+      // Calculate total pages: 1 page for initial 100 + pages for remaining (20 items each)
+      const remainingItems = Math.max(0, response.total - 100);
+      bookingsPagination.totalPages = 1 + Math.ceil(remainingItems / 20);
+      
+      if (reset) {
+        // Initial load: set to page 1
+        bookingsPagination.currentPage = 1;
+      }
+      // For subsequent loads, currentPage is already incremented before API call
+      
       bookingsPagination.hasMore = bookingsPagination.currentPage < bookingsPagination.totalPages;
       console.log("📊 Pagination state:", {
         currentPage: bookingsPagination.currentPage,
         totalPages: bookingsPagination.totalPages,
         total: bookingsPagination.total,
-        hasMore: bookingsPagination.hasMore
+        remainingItems: remainingItems,
+        hasMore: bookingsPagination.hasMore,
+        reset: reset
       });
     }
     
