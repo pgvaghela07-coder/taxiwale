@@ -1420,6 +1420,45 @@ html {
   margin-right: 6px;
 }
 
+.warning-note-card {
+  background: rgba(255, 152, 0, 0.15);
+  border: 1px solid rgba(255, 152, 0, 0.4);
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ffcc80;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% {
+    border-color: rgba(255, 152, 0, 0.4);
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+  }
+  50% {
+    border-color: rgba(255, 152, 0, 0.6);
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+  }
+}
+
+.warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-text {
+  flex: 1;
+  font-weight: 500;
+  color: #ffcc80;
+}
+
 .rating-section {
   display: flex;
   align-items: center;

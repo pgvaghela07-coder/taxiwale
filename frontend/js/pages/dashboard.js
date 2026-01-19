@@ -1323,6 +1323,17 @@ function createBookingCard(booking) {
           <span class="notes-label">Notes:</span>
           <span>${notes}</span>
         </div>
+        
+        ${
+          booking.warningNote
+            ? `
+        <div class="warning-note-card">
+          <span class="warning-icon">⚠️</span>
+          <span class="warning-text">${booking.warningNote}</span>
+        </div>
+        `
+            : ""
+        }
       </div>
 
       <div class="card-footer">
