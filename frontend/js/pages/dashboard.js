@@ -1079,7 +1079,6 @@ function createBookingCard(booking) {
       
       <div class="card-body">
         <div class="pickup-row">
-          <span class="pickup-label">Pickup:</span>
           <span class="pickup-value">${formattedDate} • ${formattedTime}</span>
           <span class="upload-time">${timeAgo}</span>
         </div>
