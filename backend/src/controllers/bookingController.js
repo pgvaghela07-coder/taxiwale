@@ -15,14 +15,19 @@ exports.getBookings = async (req, res) => {
       pickupCity,
       dropCity,
       page = 1,
-      limit = 20,
+      limit = 100, // Increased limit to show more bookings
       sort = "-createdAt",
     } = req.query;
 
-    // Build filter - only show active bookings by default
-    const filter = { 
-      status: status || "active" // Only show active bookings unless status is specified
-    };
+    // Build filter - show active and assigned bookings by default (all available bookings)
+    const filter = {};
+    if (status) {
+      // If status is explicitly provided, use it
+      filter.status = status;
+    } else {
+      // By default, show active and assigned bookings (all available bookings for partners to take)
+      filter.status = { $in: ["active", "assigned"] };
+    }
     if (vehicleType) filter.vehicleType = vehicleType;
     if (tripType) filter.tripType = tripType;
     if (pickupCity) filter["pickup.city"] = new RegExp(pickupCity, "i");

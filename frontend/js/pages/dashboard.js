@@ -735,7 +735,12 @@ async function loadBookingsFromAPI() {
       }
     }
 
-    // Fetch ALL bookings from API (public, active bookings)
+    // Request more bookings (increase limit to get all bookings)
+    filters.limit = 100; // Request up to 100 bookings per page
+    filters.page = 1; // Start from first page
+
+    // Fetch ALL bookings from API (active and assigned bookings)
+    // Backend now returns active + assigned bookings by default (not just active)
     // This shows all available bookings that users can take
     console.log("📤 Calling apiService.getBookings with filters:", filters);
     const response = await apiService.getBookings(filters);
