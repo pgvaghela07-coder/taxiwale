@@ -52,7 +52,7 @@ async function findAvailablePort(host = "localhost") {
 
 function getApiBaseUrl() {
   // 🔥 Always use backend domain (production)
-  return "https://ranaak.com/api";
+  return "https://taxiwalepartners.com/api";
 }
 
 // Initialize API base URL
@@ -67,12 +67,12 @@ console.log("🌐 API Base URL (initial):", API_BASE_URL);
     localStorage.removeItem("API_BASE_URL");
     localStorage.removeItem("DETECTED_BACKEND_PORT");
     // Update API_BASE_URL to use production
-    API_BASE_URL = "https://ranaak.com/api";
+    API_BASE_URL = "https://taxiwalepartners.com/api";
     console.log("✅ Now using production backend:", API_BASE_URL);
   }
 })();
 
-// Port auto-detection disabled - using production backend at ranaak.com
+// Port auto-detection disabled - using production backend at taxiwalepartners.com
 // If you need to use localhost backend, set it manually:
 // localStorage.setItem('API_BASE_URL', 'http://localhost:6300/api')
 
